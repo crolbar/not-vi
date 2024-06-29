@@ -1,4 +1,4 @@
-use std::{sync::mpsc, thread, time::Duration};
+use std::{sync::mpsc, thread};
 use crossterm::event::{self, Event};
 use anyhow::Result;
 
@@ -12,10 +12,8 @@ impl EventHandler {
 
         thread::spawn(move || {
             loop {
-                if event::poll(Duration::from_millis(200)).unwrap() {
-                    if let Some(e) = Some(event::read().unwrap()) {
-                        tx.send(e).unwrap();
-                    }
+                if let Some(e) = Some(event::read().unwrap()) {
+                    tx.send(e).unwrap();
                 }
             }
         });

@@ -1,13 +1,20 @@
 use crossterm::event::{KeyCode, KeyEvent};
-use crate::{app::App, tui::Tui};
+use crate::{app::{App, editor::EditorMode}, tui::Tui};
 use anyhow::Result;
 
-pub fn update(app: &mut App, tui: &mut Tui, key: KeyEvent) -> Result<()> {
-    match key.code {
-        KeyCode::Char('q') => {app.exit = true; },
+impl App {
+    pub fn update(&mut self, tui: &mut Tui, key: KeyEvent) -> Result<()> {
+        match key.code {
+            KeyCode::Char('q') => { self.exit = true; },
 
-        _ => ()
+            _ => {
+                match *self.editor.get_mode() {
+                    EditorMode::Normal => self.editor.normal_update(tui, key)?,
+                    EditorMode::Insert => self.editor.insert_update(tui, key)?,
+                }
+            }
+        }
+
+        Ok(())
     }
-
-    Ok(())
 }
