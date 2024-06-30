@@ -83,19 +83,23 @@ impl Editor {
                     (x == 0 && y != 0 && !del_prev) ||
                     (del_prev && x == line.len())
                 {
-                    let removed_line = &buf.remove(y + del_prev as usize);
+                    let remove_line_index = y + del_prev as usize;
 
-                    let mod_line = buf
-                        .get_mut(y - !del_prev as usize)
-                        .unwrap();
+                    if remove_line_index < buf.len() {
+                        let removed_line = &buf.remove(remove_line_index);
 
-                    let above_len = mod_line.len() + 1;
+                        let mod_line = buf
+                            .get_mut(y - !del_prev as usize)
+                            .unwrap();
 
-                    mod_line.push_str(removed_line);
+                        let above_len = mod_line.len() + 1;
 
-                    if !del_prev {
-                        self.cursor.move_x_to(above_len);
-                        self.cursor.move_up(buf.clone(), true);
+                        mod_line.push_str(removed_line);
+
+                        if !del_prev {
+                            self.cursor.move_x_to(above_len);
+                            self.cursor.move_up(buf.clone(), true);
+                        }
                     }
                     
                 } else if (x != 0 && line.len() > 0 && !del_prev) || del_prev {
@@ -104,13 +108,15 @@ impl Editor {
             }
 
 
-            if ' ' == removed_char {
-                let c = buf[y].chars().skip(x.saturating_sub(3 + 1)).take_while(|c| *c == ' ').count();
+            if !del_prev {
+                if ' ' == removed_char {
+                    let c = buf[y].chars().skip(x.saturating_sub(3 + 1)).take_while(|c| *c == ' ').count();
 
-                if c == 3 {
-                    for i in 0..3 {
-                        buf[y].remove(x - i - 2);
-                        self.cursor.move_left();
+                    if c == 3 {
+                        for i in 0..3 {
+                            buf[y].remove(x - i - 2);
+                            self.cursor.move_left();
+                        }
                     }
                 }
             }

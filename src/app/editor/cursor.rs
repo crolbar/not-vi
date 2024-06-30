@@ -56,7 +56,7 @@ impl Cursor {
     pub fn move_down(&mut self, maxy: u16, buf: Vec<String>) {
         if 
             (maxy - 1) as usize > self.y &&
-            buf.len() - 2 > self.y
+            buf.len().saturating_sub(2) > self.y
         {
             self.y += 1;
         }
