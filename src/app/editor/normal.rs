@@ -1,4 +1,4 @@
-use crossterm::event::{KeyEvent, KeyCode};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use crate::tui::Tui;
 use anyhow::Result;
 use super::Editor;
@@ -19,6 +19,10 @@ impl Editor {
             KeyCode::Char('a') => { 
                 self.cursor.move_right(maxx, buf, true);
                 self.enter_insert()? 
+            },
+
+            KeyCode::Char('w') | KeyCode::Char('W') => {
+                self.cursor.move_to_next_word_start(maxy, buf, key.modifiers == KeyModifiers::SHIFT)
             },
 
             _ => ()

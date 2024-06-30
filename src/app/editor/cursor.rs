@@ -71,4 +71,34 @@ impl Cursor {
             self.handle_virt_move_x(buf);
         }
     }
+
+    pub fn move_to_next_word_start(&mut self, maxy: u16, buf: Vec<String>, shift: bool) {
+        let x = self.x;
+        let y = self.y;
+
+        let line = &buf[y];
+
+        let curr_char_is_alpha = line.chars().nth(x).unwrap_or(' ').is_alphabetic();
+        let mut has_whitespace = false;
+
+        self.x = line.chars().skip(x + 1).position(|c| {
+            if c == ' ' {
+                has_whitespace = true;
+            }
+
+            if has_whitespace {
+                c != ' '
+            } else 
+                if !shift {
+                    if curr_char_is_alpha {
+                        !c.is_alphabetic()
+                    } else {
+                        c.is_alphabetic()
+                    }
+                } else { false }
+        }).map(|i| i + x + 1).unwrap_or_else(|| {
+            self.move_down(maxy, buf.clone());
+            buf[self.y].chars().position(|c| c != ' ').unwrap_or(0)
+        });
+    }
 }
