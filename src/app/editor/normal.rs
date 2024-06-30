@@ -5,24 +5,22 @@ use super::Editor;
 
 impl Editor {
     pub fn normal_update(&mut self, _tui: &mut Tui, key: KeyEvent) -> Result<()> {
-        let maxx = self.frame_rect.width;
-        let maxy = self.frame_rect.height;
-        let buf = self.get_buf().clone();
-
         match key.code {
-            KeyCode::Char('h') => { self.cursor.move_left(); },
-            KeyCode::Char('l') => { self.cursor.move_right(maxx, buf, false); },
-            KeyCode::Char('k') => { self.cursor.move_up(buf, false); },
-            KeyCode::Char('j') => { self.cursor.move_down(maxy, buf); },
+            KeyCode::Char('h') => { self.cursor_move_left(); },
+            KeyCode::Char('l') => { self.cursor_move_right(); },
+            KeyCode::Char('k') => { self.cursor_move_up(false); },
+            KeyCode::Char('j') => { self.cursor_move_down(); },
 
             KeyCode::Char('i') => { self.enter_insert()? },
             KeyCode::Char('a') => { 
-                self.cursor.move_right(maxx, buf, true);
                 self.enter_insert()? 
             },
 
             KeyCode::Char('w') | KeyCode::Char('W') => {
-                self.cursor.move_to_next_word_start(maxy, buf, key.modifiers == KeyModifiers::SHIFT)
+                self.cursor_move_to_next_word_start(key.modifiers == KeyModifiers::SHIFT)
+            },
+            KeyCode::Char('e') | KeyCode::Char('E') => {
+                self.cursor_move_to_curr_word_end(key.modifiers == KeyModifiers::SHIFT)
             },
 
             _ => ()

@@ -5,21 +5,17 @@ use super::Editor;
 
 impl Editor {
     pub fn insert_update(&mut self, tui: &mut Tui, key: KeyEvent) -> Result<()> {
-        let maxx = self.frame_rect.width;
-        let maxy = self.frame_rect.height;
-        let buf = self.get_buf().clone();
-
         match key.code {
             KeyCode::Esc => {
-                self.cursor.move_left();
+                self.cursor_move_left();
                 tui.term.set_cursor(self.cursor.get_x() as u16, self.cursor.get_y() as u16)?;
                 self.enter_normal()?;
             }
 
-            KeyCode::Up => { self.cursor.move_up(buf, false) },
-            KeyCode::Down => { self.cursor.move_down(maxy, buf) },
-            KeyCode::Right => { self.cursor.move_right(maxx, buf, true) },
-            KeyCode::Left => { self.cursor.move_left() },
+            KeyCode::Up => { self.cursor_move_up(false) },
+            KeyCode::Down => { self.cursor_move_down() },
+            KeyCode::Right => { self.cursor_move_right() },
+            KeyCode::Left => { self.cursor_move_left() },
 
             KeyCode::Char(char) => { self.insert_char(char) },
             KeyCode::Backspace | KeyCode::Delete => { self.del_char(key.code == KeyCode::Delete) },
@@ -36,7 +32,7 @@ impl Editor {
     pub fn insert_tab(&mut self) {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
             line.insert_str(self.cursor.get_x(), "    ");
-            self.cursor.move_x_to(self.cursor.get_x() + 4);
+            self.cursor_move_x_to(self.cursor.get_x() + 4);
         }
     }
 
@@ -53,29 +49,24 @@ impl Editor {
             self.buf.insert(y, String::new());
         }
 
-        self.cursor.move_down(self.frame_rect.width, self.get_buf().clone());
-        self.cursor.move_x_to(0);
+        self.cursor_move_down();
+        self.cursor_move_x_to(0);
     }
 
     pub fn insert_char(&mut self, c: char) {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
             line.insert(self.cursor.get_x(), c);
 
-            self.cursor.move_right(
-                self.frame_rect.width,
-                self.get_buf().clone(),
-                true
-            );
+            self.cursor_move_right();
         }
     }
 
     pub fn del_char(&mut self, del_prev: bool) {
         let x = self.cursor.get_x();
         let y = self.cursor.get_y();
-        let buf: &mut Vec<String> = self.buf.as_mut();
 
         let mut removed_char = '\0';
-        if let Some(line) = buf.get_mut(y) {
+        if let Some(line) = self.buf.get_mut(y) {
             if x >= line.len() && line.len() > 0 && !del_prev {
                 removed_char = line.pop().unwrap();
             }  else {
@@ -85,10 +76,10 @@ impl Editor {
                 {
                     let remove_line_index = y + del_prev as usize;
 
-                    if remove_line_index < buf.len() {
-                        let removed_line = &buf.remove(remove_line_index);
+                    if remove_line_index < self.buf.len() {
+                        let removed_line = &self.buf.remove(remove_line_index);
 
-                        let mod_line = buf
+                        let mod_line = self.buf
                             .get_mut(y - !del_prev as usize)
                             .unwrap();
 
@@ -97,8 +88,8 @@ impl Editor {
                         mod_line.push_str(removed_line);
 
                         if !del_prev {
-                            self.cursor.move_x_to(above_len);
-                            self.cursor.move_up(buf.clone(), true);
+                            self.cursor_move_x_to(above_len);
+                            self.cursor_move_up(true);
                         }
                     }
                     
@@ -110,12 +101,12 @@ impl Editor {
 
             if !del_prev {
                 if ' ' == removed_char {
-                    let c = buf[y].chars().skip(x.saturating_sub(3 + 1)).take_while(|c| *c == ' ').count();
+                    let c = self.buf[y].chars().skip(x.saturating_sub(3 + 1)).take_while(|c| *c == ' ').count();
 
                     if c == 3 {
                         for i in 0..3 {
-                            buf[y].remove(x - i - 2);
-                            self.cursor.move_left();
+                            self.buf[y].remove(x - i - 2);
+                            self.cursor_move_left();
                         }
                     }
                 }
@@ -124,7 +115,7 @@ impl Editor {
 
 
         if !del_prev{
-            self.cursor.move_left();
+            self.cursor_move_left();
         }
     }
 }

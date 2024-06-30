@@ -40,6 +40,7 @@ impl Editor {
 
     pub fn get_buf(&self) -> &Vec<String> { &self.buf }
     pub fn get_mode(&self) -> &EditorMode { &self.mode }
+    pub fn is_insert(&self) -> bool { self.mode == EditorMode::Insert }
 
     pub fn enter_normal(&mut self) -> Result<()> {
         self.mode = EditorMode::Normal;
@@ -49,6 +50,7 @@ impl Editor {
     }
 
     pub fn enter_insert(&mut self) -> Result<()> {
+        self.cursor_move_x_to(self.cursor.get_x() + 1);
         self.mode = EditorMode::Insert;
         execute!(std::io::stderr(), SetCursorStyle::SteadyBar)?;
 
