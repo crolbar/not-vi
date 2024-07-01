@@ -77,84 +77,86 @@ impl Editor {
         }
     }
 
-    pub fn cursor_move_to_next_word_start(&mut self, shift: bool) {
-        let x = self.cursor.x;
-        let y = self.cursor.y;
+    fn get_curr_next_word(&mut self, shift: bool) -> (bool, Vec<(usize, String)>) {
+        let mut line = self.buf.get(self.cursor.y).unwrap().clone();
+        let origin_line_len = line.len();
+        if let Some(next_line) = self.buf.get(self.cursor.y + 1) {
+            line.push(' ');
+            line.push_str(&next_line);
+        }
 
-        let line = &self.buf[y];
+        let mut iter_from_x = line.chars()
+            .enumerate()
+            .skip(self.cursor.x)
+            .skip_while(|(_, c)| *c == ' ');
 
-        let curr_char_is_alpha = line.chars().nth(x).unwrap_or(' ').is_alphabetic();
-        let mut has_whitespace = false;
 
-        self.cursor.x = line.chars().enumerate()
-            .skip(x + 1)
-            .find(|(_, c)| {
-            if *c == ' ' {
-                has_whitespace = true;
+        if let Some((curr_word_start, curr_char)) = iter_from_x.next() {
+
+            let current_word: String = iter_from_x.clone()
+                .take_while(|(_, c)|{
+                    if shift {
+                        *c != ' '
+                    } else {
+                        *c != ' ' && c.is_alphabetic() == curr_char.is_alphabetic()
+                    }
+                }).map(|i| i.1)
+            .collect();
+
+
+            if let Some((mut next_word_start, mut next_char)) = iter_from_x.nth(current_word.len()) {
+                if next_char == ' ' {
+                   (next_word_start, next_char) = iter_from_x.find(|(_, c)| *c != ' ').unwrap_or((0, ' '));
+                }
+                let mut has_moved_down = false;
+                if next_word_start > origin_line_len {
+                    next_word_start -= origin_line_len + 1;
+                    has_moved_down = true;
+                }
+
+                let next_word: String = iter_from_x
+                    .skip_while(|(_, c)| *c == ' ')
+                    .take_while(|(_, c)|{
+                        if shift {
+                            *c != ' '
+                        } else {
+                            *c != ' ' && c.is_alphabetic() == next_char.is_alphabetic()
+                        }
+                    })
+                    .map(|i| i.1).collect();
+
+                return (has_moved_down, vec![(curr_word_start, current_word), (next_word_start, next_word)]);
             }
 
-            if has_whitespace {
-                *c != ' '
-            } else 
-                if !shift {
-                    c.is_alphabetic() != curr_char_is_alpha
-                } else {
-                    false 
-                }
-        }).map(|(i, _)| i).unwrap_or_else(|| {
-            self.cursor_move_down();
-            self.buf[self.cursor.y].chars().position(|c| c != ' ').unwrap_or(0)
-        });
+            return (false, vec![(curr_word_start, current_word)]);
+        }
+
+        (false, vec![])
+    }
+
+    pub fn cursor_move_to_next_word_start(&mut self, shift: bool) {
+        let (has_moved_down, words) = self.get_curr_next_word(shift);
+
+        if words.len() > 1 {
+            if has_moved_down {
+                self.cursor_move_down();
+            }
+            self.cursor.x = words[1].0;
+        }
     }
 
     pub fn cursor_move_to_curr_word_end(&mut self, shift: bool) {
-        let x = self.cursor.x;
-        let y = self.cursor.y;
+        let (has_moved_down, words) = self.get_curr_next_word(shift);
 
-        let line = &self.buf[y];
-        let line_len = line.len();
-
-        let mut curr_char_is_alpha = line.chars().nth(x).unwrap_or(' ').is_alphabetic();
-
-        if let Some(next_char) = line.chars().nth(x + 1) {
-            // if we are at the end of the word move to next word
-            if next_char.is_alphabetic() != curr_char_is_alpha || next_char == ' ' {
-                curr_char_is_alpha = line.chars().skip(x + 1).find(|c| *c != ' ').unwrap_or(' ').is_alphabetic()
+        if words.len() > 0 {
+            if words[0].1.len() == 0 && words.len() == 2 {
+                self.cursor.x = words[1].0 + words[1].1.len();
+            } else {
+                self.cursor.x = words[0].0 + words[0].1.len();
+            }
+            if has_moved_down {
+                self.cursor_move_down();
             }
         }
-
-        self.cursor.x = line.chars().enumerate()
-            .skip(x + 1).skip_while(|c| c.1 == ' ')
-            .find(|(_, c)| 
-        {
-            if *c == ' ' {
-                true
-            } else 
-                if !shift {
-                    c.is_alphabetic() != curr_char_is_alpha
-                } else {
-                    false 
-                }
-        }).map(|(i, _)| i - 1).unwrap_or_else(|| {
-            if x == line_len.saturating_sub(1) {
-                self.cursor_move_down();
-
-                let iter = &mut self.buf[self.cursor.y].chars().enumerate()
-                    .skip_while(|(_, c)| *c == ' ');
-
-                if let Some((_, start_char)) = iter.clone().next() {
-                    iter.find(|(_, c)|{
-                        if shift {
-                            *c == ' '
-                        } else {
-                            c.is_alphabetic() != start_char.is_alphabetic()
-                        }
-                    }).map(|i| i.0 - 1)
-                    .unwrap_or(0)
-                } else { 0 }
-            } else {
-                line_len.saturating_sub(1)
-            }
-        });
     }
 }
