@@ -17,6 +17,7 @@ pub struct Editor {
      mode: EditorMode,
      frame_rect: Rect,
      pub cursor: Cursor,
+     buffered_char: Option<char>,
 }
 
 impl Editor {
@@ -31,9 +32,13 @@ impl Editor {
             mode: EditorMode::Normal,
             cursor: Cursor::new(),
             frame_rect: Rect::default(),
+            buffered_char: None
         })
     }
 
+    pub fn buffer_char(&mut self, char: char) {
+        self.buffered_char = Some(char)
+    }
     pub fn set_rect(&mut self, rect: Rect) {
         self.frame_rect = rect;
     }

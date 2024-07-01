@@ -77,6 +77,16 @@ impl Editor {
         }
     }
 
+
+    pub fn cursor_move_to_char(&mut self, char: char) {
+        self.cursor.x = self.buf[self.cursor.y]
+            .chars().enumerate()
+            .skip(self.cursor.x + 1)
+            .find(|(_, c)| *c == char)
+            .map(|i| i.0)
+            .unwrap_or(self.cursor.x);
+    }
+
     pub fn cursor_move_to_next_word_start(&mut self, shift: bool) {
         let x = self.cursor.x;
         let y = self.cursor.y;
