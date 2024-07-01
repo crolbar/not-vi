@@ -58,6 +58,9 @@ impl Editor {
         }
     }
 
+    pub fn cursor_move_top(&mut self) { self.cursor.y = 0; }
+    pub fn cursor_move_bottom(&mut self) { self.cursor.y = self.buf.len().saturating_sub(2); }
+
     pub fn cursor_move_down(&mut self) {
         if 
             (self.frame_rect.width - 1) as usize > self.cursor.y &&

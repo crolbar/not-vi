@@ -36,9 +36,18 @@ impl Editor {
         })
     }
 
-    pub fn buffer_char(&mut self, char: char) {
-        self.buffered_char = Some(char)
+    pub fn buffer_char(&mut self, char: char) -> Result<()> {
+        execute!(std::io::stderr(), SetCursorStyle::SteadyUnderScore)?;
+        self.buffered_char = Some(char);
+        Ok(())
     }
+
+    pub fn remove_bufferd_char(&mut self) -> Result<()> {
+        execute!(std::io::stderr(), SetCursorStyle::SteadyBlock)?;
+        self.buffered_char = None;
+        Ok(())
+    }
+
     pub fn set_rect(&mut self, rect: Rect) {
         self.frame_rect = rect;
     }
