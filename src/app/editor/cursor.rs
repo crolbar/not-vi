@@ -41,7 +41,7 @@ impl Editor {
     }
 
 
-    fn handle_virt_move_x(&mut self) {
+    pub fn handle_virt_move_x(&mut self) {
         if let Some(l) = self.buf.get(self.cursor.y as usize) {
             if self.cursor.x >= l.len() {
                 self.cursor.x = l.len().saturating_sub(1)

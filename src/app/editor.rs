@@ -140,7 +140,6 @@ impl Editor {
     }
 
     pub fn enter_insert(&mut self) -> Result<()> {
-        self.cursor_move_x_to(self.cursor.get_x() + 1);
         self.mode = EditorMode::Insert;
         execute!(std::io::stderr(), SetCursorStyle::SteadyBar)?;
 

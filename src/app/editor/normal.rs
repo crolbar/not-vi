@@ -24,8 +24,8 @@ impl Editor {
                                 if self.cursor.get_y() < self.buf.len().saturating_sub(2) {
                                     self.remove_line_at_cursor();
                                     self.remove_line_at_cursor();
-                                    self.cursor_move_down();
-                                    if self.cursor.get_y() <= self.buf.len().saturating_sub(1) {
+                                    self.handle_virt_move_x();
+                                    if self.cursor.get_y() > self.buf.len().saturating_sub(2) {
                                         self.cursor_move_up(false);
                                     }
                                 }
@@ -35,8 +35,8 @@ impl Editor {
                                     self.remove_line_at_cursor();
                                     self.cursor_move_up(false);
                                     self.remove_line_at_cursor();
-                                    self.cursor_move_down();
-                                    if self.cursor.get_y() <= self.buf.len().saturating_sub(1) {
+                                    self.handle_virt_move_x();
+                                    if self.cursor.get_y() > self.buf.len().saturating_sub(2) {
                                         self.cursor_move_up(false);
                                     }
                                 }
@@ -83,7 +83,10 @@ impl Editor {
                     self.enter_insert()?;
                     self.cursor_move_x_to(0);
                 },
-                KeyCode::Char('a') => { self.enter_insert()? },
+                KeyCode::Char('a') => { 
+                    self.cursor_move_x_to(self.cursor.get_x() + 1);
+                    self.enter_insert()? 
+                },
                 KeyCode::Char('A') => {
                     self.enter_insert()?;
                     self.cursor_move_x_to(self.buf[self.cursor.get_y()].len());
