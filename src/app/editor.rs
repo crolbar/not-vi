@@ -68,8 +68,8 @@ impl Editor {
     pub fn get_buf(&self) -> &Vec<String> { &self.buf }
 
     pub fn set_scroll(&mut self) { 
-        let y = self.cursor.get_y() as u16;
         {
+            let y = self.cursor.get_y() as u16;
             let win_height = self.window.height;
             let num_lines = self.buf.len() as u16 - 2;
 
@@ -99,19 +99,14 @@ impl Editor {
         {
             let x = self.cursor.get_x() as u16;
             let win_width = self.window.width;
-            let num_chars = self.buf[y as usize].len() as u16;
 
                 {
                     let num_chars_till_eol: i16 = win_width.saturating_sub(1) as i16 - x.saturating_sub(self.scroll.1) as i16;
 
-                    if num_chars_till_eol.unsigned_abs() + x <= num_chars.saturating_sub(2) {
-                        if num_chars_till_eol.is_negative() {
-                            self.scroll.1 += num_chars_till_eol.unsigned_abs() + self.conf.sidescrolloff;
-                        } else if num_chars_till_eol.unsigned_abs() <= self.conf.sidescrolloff {
-                            self.scroll.1 += self.conf.sidescrolloff - num_chars_till_eol.unsigned_abs();
-                        }
-                    } else {
-                        self.scroll.1 = num_chars.saturating_sub(win_width)
+                    if num_chars_till_eol.is_negative() {
+                        self.scroll.1 += num_chars_till_eol.unsigned_abs() + self.conf.sidescrolloff;
+                    } else if num_chars_till_eol.unsigned_abs() <= self.conf.sidescrolloff {
+                        self.scroll.1 += self.conf.sidescrolloff - num_chars_till_eol.unsigned_abs();
                     }
                 }
                 {

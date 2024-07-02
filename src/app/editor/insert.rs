@@ -19,12 +19,13 @@ impl Editor {
 
             KeyCode::Char(char) => { self.insert_char(char) },
             KeyCode::Backspace | KeyCode::Delete => { self.del_char(key.code == KeyCode::Delete) },
-            KeyCode::Enter => { self.insert_nl() }
+            KeyCode::Enter => { self.insert_nl() },
             KeyCode::Tab => { self.insert_tab() }
 
             _ => ()
         }
 
+        self.set_scroll();
         Ok(())
     }
 
@@ -51,6 +52,7 @@ impl Editor {
 
         self.cursor_move_down();
         self.cursor_move_x_to(0);
+        self.set_scroll();
     }
 
     pub fn insert_char(&mut self, c: char) {

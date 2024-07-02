@@ -102,7 +102,8 @@ impl Editor {
                 _ => ()
             }
         }
-        
+
+        self.set_scroll();
         Ok(())
     }
 
