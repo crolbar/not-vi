@@ -24,6 +24,7 @@ impl Editor {
                                 if self.cursor.get_y() < self.buf.len().saturating_sub(2) {
                                     self.remove_line_at_cursor();
                                     self.remove_line_at_cursor();
+                                    self.cursor_move_down();
                                     if self.cursor.get_y() <= self.buf.len().saturating_sub(1) {
                                         self.cursor_move_up(false);
                                     }
@@ -34,6 +35,7 @@ impl Editor {
                                     self.remove_line_at_cursor();
                                     self.cursor_move_up(false);
                                     self.remove_line_at_cursor();
+                                    self.cursor_move_down();
                                     if self.cursor.get_y() <= self.buf.len().saturating_sub(1) {
                                         self.cursor_move_up(false);
                                     }
