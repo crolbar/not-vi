@@ -14,6 +14,7 @@ impl App {
                 }
             }
         }
+        self.editor.set_scroll();
 
         Ok(())
     }

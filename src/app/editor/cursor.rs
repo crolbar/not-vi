@@ -27,10 +27,7 @@ impl Editor {
     }
 
     pub fn cursor_move_right(&mut self) {
-        if 
-            (self.frame_rect.width - 1) as usize > self.cursor.x &&
-            self.buf[self.cursor.y].len().saturating_sub(!self.is_insert() as usize) > self.cursor.x
-        {
+        if self.buf[self.cursor.y].len().saturating_sub(!self.is_insert() as usize) > self.cursor.x {
             self.cursor.x += 1;
         }
 
@@ -58,14 +55,8 @@ impl Editor {
         }
     }
 
-    pub fn cursor_move_top(&mut self) { self.cursor.y = 0; }
-    pub fn cursor_move_bottom(&mut self) { self.cursor.y = self.buf.len().saturating_sub(2); }
-
     pub fn cursor_move_down(&mut self) {
-        if 
-            (self.frame_rect.width - 1) as usize > self.cursor.y &&
-            self.buf.len().saturating_sub(2) > self.cursor.y
-        {
+        if self.buf.len().saturating_sub(2) > self.cursor.y {
             self.cursor.y += 1;
         }
 
