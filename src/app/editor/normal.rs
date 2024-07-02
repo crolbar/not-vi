@@ -59,7 +59,19 @@ impl Editor {
                 KeyCode::Char('j') => { self.cursor_move_down(); },
 
                 KeyCode::Char('f') => { self.buffer_char('f')? },
-                KeyCode::Char('d') => { self.buffer_char('d')? },
+                KeyCode::Char('d') => { 
+                    if key.modifiers == KeyModifiers::CONTROL {
+                        self.cursor_move_down_half_win();
+                    } else {
+                        self.buffer_char('d')? 
+                    }
+                },
+
+                KeyCode::Char('u') => { 
+                    if key.modifiers == KeyModifiers::CONTROL {
+                        self.cursor_move_up_half_win();
+                    }
+                },
 
                 KeyCode::Char('x') => { self.remove_char_at_cursor() },
 

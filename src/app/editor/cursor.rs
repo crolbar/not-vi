@@ -81,6 +81,30 @@ impl Editor {
     }
 
 
+    pub fn cursor_move_top(&mut self) { self.cursor.y = 0; }
+    pub fn cursor_move_bottom(&mut self) { self.cursor.y = self.buf.len().saturating_sub(2); }
+
+    pub fn cursor_move_up_half_win(&mut self) {
+        let half_sub_y = self.cursor.y.saturating_sub((self.window.height / 2) as usize);
+
+        if half_sub_y <= 0 {
+            self.cursor.y = 0;
+        } else {
+            self.cursor.y = half_sub_y;
+        }
+    }
+
+    pub fn cursor_move_down_half_win(&mut self) {
+        let half_plus_y = self.cursor.y + (self.window.height / 2) as usize;
+        let lines = self.buf.len() - 2;
+
+        if half_plus_y > lines {
+            self.cursor.y = lines;
+        } else {
+            self.cursor.y = half_plus_y;
+        }
+    }
+
     pub fn cursor_move_to_char(&mut self, char: char) {
         if let Some(line) = self.buf.get(self.cursor.y) {
             self.cursor.x = line
