@@ -9,7 +9,7 @@ use crossterm::event::Event;
 
 fn main() -> Result<()> {
     let mut tui = tui::Tui::enter()?;
-    let mut app = App::new()?;
+    let mut app = App::new(tui.term.get_frame().size())?;
 
     while !app.exit {
         tui.draw(&mut app)?;

@@ -2,10 +2,11 @@ mod cursor;
 mod normal;
 mod insert;
 mod scroll;
+use std::rc::Rc;
 use anyhow::Result;
 use cursor::Cursor;
 use crossterm::{execute, cursor::SetCursorStyle};
-use ratatui::layout::Rect;
+use ratatui::prelude::*;
 
 #[derive(PartialEq)]
 pub enum EditorMode {
@@ -22,33 +23,65 @@ pub struct EditorConfing {
 pub struct Editor {
      buf: Vec<String>,
      mode: EditorMode,
-     pub window: Rect,
+     window: Rect,
+     num_window: Rect,
      pub cursor: Cursor,
      buffered_char: Option<char>,
      pub conf: EditorConfing,
      scroll: (u16, u16),
+
+     pub dbg: String,
 }
 
 impl Editor {
-    pub fn new() -> Result<Self> {
+    pub fn new(v: Rc<[Rect]>) -> Result<Self> {
         let buf = std::fs::read_to_string("src/app/editor.rs")?
             .split('\n')
             .map(|x| x.to_string())
             .collect();
 
+        let h = Self::create_rects(v, &buf);
+
         Ok(Self {
             buf,
             mode: EditorMode::Normal,
-            cursor: Cursor::new(),
-            window: Rect::default(),
+            cursor: Cursor::new(&h[1]),
+            window: h[1],
+            num_window: h[0],
             buffered_char: None,
             scroll: (0, 0),
             conf: EditorConfing {
                 scrolloff: 15,
                 sidescrolloff: 35
             },
+
+            dbg: String::new(),
         })
     }
+
+    pub fn get_window(&mut self) -> Rect  { self.window }
+    pub fn get_num_win(&mut self) -> Rect  { self.num_window }
+        
+
+    pub fn update_rects(&mut self, v: Rc<[Rect]>) {
+        let h = Self::create_rects(v, &self.buf);
+
+        self.window = h[1];
+        self.num_window = h[0];
+
+        self.cursor.update_min_max(self.window);
+    }
+    
+    fn create_rects(v: Rc<[Rect]>, buf: &Vec<String>) -> Rc<[Rect]>  {
+        Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Min((buf.len() as f32).log10().floor() as u16 + 1),
+                Constraint::Percentage(80),
+                Constraint::Percentage(20),
+            ]).split(v[0])
+    }
+
 
     pub fn buffer_char(&mut self, char: char) -> Result<()> {
         execute!(std::io::stderr(), SetCursorStyle::SteadyUnderScore)?;
@@ -60,10 +93,6 @@ impl Editor {
         execute!(std::io::stderr(), SetCursorStyle::SteadyBlock)?;
         self.buffered_char = None;
         Ok(())
-    }
-
-    pub fn set_rect(&mut self, rect: Rect) {
-        self.window = rect;
     }
 
     pub fn get_buf(&self) -> &Vec<String> { &self.buf }

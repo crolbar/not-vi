@@ -3,26 +3,26 @@ use ratatui::prelude::*;
 use ratatui::widgets::*;
 
 pub fn render(app: &mut App, frame: &mut Frame) {
-    let buf = app.editor.get_buf().join("\n");
+    app.update_rects(frame.size());
+    let buf = app.editor.get_buf();
+    let display_buf = buf.join("\n");
     let scroll = app.editor.get_scroll();
 
-    let o = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Percentage(100),
-            Constraint::Min(1),
-        ]).split(frame.size());
-
-
-    app.editor.set_rect(o[0]);
+    
     frame.render_widget(
-        Paragraph::new(buf)
+        Paragraph::new("h"),
+        app.editor.get_num_win()
+    );
+
+
+    frame.render_widget(
+        Paragraph::new(display_buf)
         .scroll(scroll),
-        o[0]
+        app.editor.get_window()
     );
 
     frame.set_cursor(
-        (app.editor.cursor.get_x() as u16).saturating_sub(app.editor.get_scroll().1),
-        (app.editor.cursor.get_y() as u16).saturating_sub(app.editor.get_scroll().0)
+        (app.editor.cursor.get_display_x() as u16).saturating_sub(app.editor.get_scroll().1),
+        (app.editor.cursor.get_display_y() as u16).saturating_sub(app.editor.get_scroll().0)
     );
 }

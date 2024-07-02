@@ -1,24 +1,45 @@
+use ratatui::layout::Rect;
+
 use super::Editor;
 
 pub struct Cursor {
     x: usize,
     y: usize,
 
+    maxx: usize,
+    minx: usize,
+    maxy: usize,
+    miny: usize,
+
     un_trunc_x: Option<usize>,
 }
 
 impl Cursor {
-    pub fn new() -> Self {
+    pub fn new(win: &Rect) -> Self {
         Self {
             x: 0,
             y: 0,
+
+            maxx: win.width as usize,
+            minx: win.x as usize,
+            maxy: win.height as usize,
+            miny: win.y as usize,
+
             un_trunc_x: None,
         }
     }
-    pub fn get_y(&self) -> usize { self.y  }
-    pub fn get_x(&self) -> usize { self.x  }
+    pub fn get_y(&self) -> usize { self.y }
+    pub fn get_x(&self) -> usize { self.x }
 
+    pub fn get_display_x(&self) -> usize { self.x + self.minx }
+    pub fn get_display_y(&self) -> usize { self.y + self.miny }
 
+    pub fn update_min_max(&mut self, win: Rect) {
+        self.minx = win.x as usize;
+        self.miny = win.y as usize;
+        self.maxx = win.width as usize;
+        self.maxy = win.height as usize;
+    }
 }
 
 impl Editor {
