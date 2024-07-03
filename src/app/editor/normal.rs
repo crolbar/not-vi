@@ -8,7 +8,8 @@ impl Editor {
         if let Some(buf_char) = self.buffered_char {
             if let KeyCode::Char(char) = key.code {
                 match buf_char {
-                    'f' => { self.cursor_move_to_char(char) },
+                    'f' => { self.cursor_move_to_char(char, false) },
+                    'F' => { self.cursor_move_to_char(char, true) },
 
                     'g' => { if char == 'g' { self.cursor_move_top(); } },
 
@@ -59,6 +60,8 @@ impl Editor {
                 KeyCode::Char('j') => { self.cursor_move_down(); },
 
                 KeyCode::Char('f') => { self.buffer_char('f')? },
+                KeyCode::Char('F') => { self.buffer_char('F')? },
+
                 KeyCode::Char('d') => { 
                     if key.modifiers == KeyModifiers::CONTROL {
                         self.cursor_move_down_half_win();
