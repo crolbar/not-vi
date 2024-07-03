@@ -93,8 +93,14 @@ impl Editor {
     }
 
 
-    pub fn cursor_move_top(&mut self) { self.cursor.y = 0; }
-    pub fn cursor_move_bottom(&mut self) { self.cursor.y = self.buf.len().saturating_sub(2); }
+    pub fn cursor_move_top(&mut self) { 
+        self.cursor.y = 0; 
+        self.handle_virt_move_x();
+    }
+    pub fn cursor_move_bottom(&mut self) {
+        self.cursor.y = self.buf.len().saturating_sub(2); 
+        self.handle_virt_move_x();
+    }
 
     pub fn cursor_move_up_half_win(&mut self) {
         let half_sub_y = self.cursor.y.saturating_sub((self.window.height / 2) as usize);
