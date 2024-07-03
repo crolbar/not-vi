@@ -103,6 +103,7 @@ impl Editor {
             self.cursor.y = 0;
         } else {
             self.cursor.y = half_sub_y;
+            self.scroll.0 = (half_sub_y as u16 + self.conf.scrolloff).saturating_sub(self.window.height);
         }
     }
 
@@ -114,6 +115,7 @@ impl Editor {
             self.cursor.y = lines;
         } else {
             self.cursor.y = half_plus_y;
+            self.scroll.0 = half_plus_y as u16 - self.conf.scrolloff;
         }
     }
 
