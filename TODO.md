@@ -1,6 +1,8 @@
 - [x] scrolling
 - [ ] way to debug
 - [ ] clap
+- [x] lines
+    - [x] relative
 
 - binds
     - [ ] 'c'

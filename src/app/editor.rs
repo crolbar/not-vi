@@ -18,13 +18,14 @@ pub enum EditorMode {
 pub struct EditorConfing {
     scrolloff: u16,
     sidescrolloff: u16,
+    relativenumber: bool,
 }
 
 pub struct Editor {
      buf: Vec<String>,
      mode: EditorMode,
      window: Rect,
-     num_window: Rect,
+     line_num_window: Rect,
      pub cursor: Cursor,
      buffered_char: Option<char>,
      pub conf: EditorConfing,
@@ -45,14 +46,15 @@ impl Editor {
         Ok(Self {
             buf,
             mode: EditorMode::Normal,
-            cursor: Cursor::new(&h[1]),
-            window: h[1],
-            num_window: h[0],
+            cursor: Cursor::new(&h[2]),
+            window: h[2],
+            line_num_window: h[0],
             buffered_char: None,
             scroll: (0, 0),
             conf: EditorConfing {
                 scrolloff: 15,
-                sidescrolloff: 35
+                sidescrolloff: 35,
+                relativenumber: true,
             },
 
             dbg: String::new(),
@@ -60,14 +62,14 @@ impl Editor {
     }
 
     pub fn get_window(&mut self) -> Rect  { self.window }
-    pub fn get_num_win(&mut self) -> Rect  { self.num_window }
+    pub fn get_line_num_win(&mut self) -> Rect  { self.line_num_window }
         
 
     pub fn update_rects(&mut self, v: Rc<[Rect]>) {
         let h = Self::create_rects(v, &self.buf);
 
-        self.window = h[1];
-        self.num_window = h[0];
+        self.window = h[2];
+        self.line_num_window = h[0];
 
         self.cursor.update_min_max(self.window);
     }
@@ -77,6 +79,7 @@ impl Editor {
             .direction(Direction::Horizontal)
             .constraints([
                 Constraint::Min((buf.len() as f32).log10().floor() as u16 + 1),
+                Constraint::Min(1),
                 Constraint::Percentage(80),
                 Constraint::Percentage(20),
             ]).split(v[0])
@@ -115,4 +118,8 @@ impl Editor {
 
         Ok(())
     }
+}
+
+impl EditorConfing {
+    pub fn uses_relativenumber(&self) -> bool { self.relativenumber == true }
 }
