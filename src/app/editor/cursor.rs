@@ -111,6 +111,7 @@ impl Editor {
             self.cursor.y = half_sub_y;
             self.scroll.0 = (half_sub_y as u16 + self.conf.scrolloff).saturating_sub(self.window.height);
         }
+        self.handle_virt_move_x();
     }
 
     pub fn cursor_move_down_half_win(&mut self) {
@@ -123,6 +124,7 @@ impl Editor {
             self.cursor.y = half_plus_y;
             self.scroll.0 = half_plus_y as u16 - self.conf.scrolloff;
         }
+        self.handle_virt_move_x();
     }
 
     pub fn cursor_move_to_char(&mut self, char: char, rev: bool) {
