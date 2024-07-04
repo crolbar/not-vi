@@ -122,7 +122,7 @@ impl Editor {
             self.cursor.y = lines;
         } else {
             self.cursor.y = half_plus_y;
-            self.scroll.0 = half_plus_y as u16 - self.conf.scrolloff;
+            self.scroll.0 = (half_plus_y as u16).saturating_sub(self.conf.scrolloff);
         }
         self.handle_virt_move_x();
     }
