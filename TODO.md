@@ -1,4 +1,5 @@
 - [x] scrolling
+    - [x] reduce scrolloff when in small window
 - [ ] way to debug
 - [ ] clap
 - [x] lines
