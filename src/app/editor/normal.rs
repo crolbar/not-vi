@@ -12,6 +12,8 @@ impl Editor {
 
                     'g' => { if char == 'g' { self.cursor_move_top(); } },
 
+                    'r' => { self.replace_char_at_cursor(char) },
+
                     'd' => { 
                         match char {
                             'l' => { self.remove_char_at_cursor() },
@@ -95,6 +97,8 @@ impl Editor {
                     self.enter_insert()?;
                 },
 
+                KeyCode::Char('r') => { self.buffer_char('r')? },
+
                 KeyCode::Char('x') => { self.remove_char_at_cursor() },
 
                 KeyCode::Char('g') => { self.buffer_char('g')? },
@@ -127,6 +131,14 @@ impl Editor {
 
         self.set_scroll();
         Ok(())
+    }
+
+    fn replace_char_at_cursor(&mut self, char: char) {
+        if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
+            let x = self.cursor.get_x();
+            line.remove(x);
+            line.insert(x, char);
+        }
     }
 
     fn remove_line_at_cursor(&mut self) {

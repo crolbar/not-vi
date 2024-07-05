@@ -18,8 +18,8 @@
         - [ ] 'b'
         - [ ] 'w'
         - [ ] 'e'
-    - [ ] 'o', 'O'
-    - [ ] 'r'eplace
+    - [x] 'o', 'O'
+    - [x] 'r'eplace
 
 - [ ] file browser
 - [ ] command mode
