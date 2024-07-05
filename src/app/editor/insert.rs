@@ -19,7 +19,7 @@ impl Editor {
 
             KeyCode::Char(char) => { self.insert_char(char) },
             KeyCode::Backspace | KeyCode::Delete => { self.del_char(key.code == KeyCode::Delete) },
-            KeyCode::Enter => { self.insert_nl() },
+            KeyCode::Enter => { self.insert_nl(false) },
             KeyCode::Tab => { self.insert_tab() }
 
             _ => ()
@@ -37,21 +37,33 @@ impl Editor {
         }
     }
 
-    pub fn insert_nl(&mut self) {
+    pub fn insert_nl(&mut self, above: bool) {
         let x = self.cursor.get_x();
         let y = self.cursor.get_y();
+
+        let indent: String = std::iter::repeat(' ').take(
+            self.buf.iter()
+                .rev()
+                .skip(self.buf.len().saturating_sub(1).saturating_sub(y))
+                .find(|l| !l.is_empty())
+                .map(|l| l.chars().take_while(|c| *c == ' ').count())
+                .unwrap_or(0)
+        ).collect();
+
         let line = self.buf.get_mut(y).unwrap();
 
         if x != 0 {
-            let rem = line.split_off(x);
+            let mut rem = line.split_off(x);
 
-            self.buf.insert(y + 1, rem);
+            rem.insert_str(0, &indent);
+            
+            self.buf.insert(y + !above as usize, rem);
         } else {
             self.buf.insert(y, String::new());
         }
 
-        self.cursor_move_down();
-        self.cursor_move_x_to(0);
+        if !above { self.cursor_move_down() }
+        self.cursor_move_x_to(indent.len());
         self.set_scroll();
     }
 

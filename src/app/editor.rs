@@ -63,7 +63,12 @@ impl Editor {
 
     pub fn get_window(&mut self) -> Rect  { self.window }
     pub fn get_line_num_win(&mut self) -> Rect  { self.line_num_window }
-        
+    pub fn get_curr_line_len(&self) -> usize { 
+        self.buf
+        .get(self.cursor.get_y())
+        .unwrap_or(&"".to_string())
+        .len() 
+    }
 
     pub fn update_rects(&mut self, v: Rc<[Rect]>) {
         let h = Self::create_rects(v, &self.buf);

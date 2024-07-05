@@ -82,6 +82,19 @@ impl Editor {
                     }
                 },
 
+
+                KeyCode::Char('O') => { 
+                    self.cursor_move_x_to(self.get_curr_line_len());
+                    self.insert_nl(true);
+                    self.enter_insert()?;
+                },
+
+                KeyCode::Char('o') => { 
+                    self.cursor_move_x_to(self.get_curr_line_len());
+                    self.insert_nl(false);
+                    self.enter_insert()?;
+                },
+
                 KeyCode::Char('x') => { self.remove_char_at_cursor() },
 
                 KeyCode::Char('g') => { self.buffer_char('g')? },
