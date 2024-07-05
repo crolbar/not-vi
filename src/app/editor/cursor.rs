@@ -127,7 +127,7 @@ impl Editor {
         self.handle_virt_move_x();
     }
 
-    pub fn cursor_move_to_char(&mut self, char: char, rev: bool) {
+    pub fn cursor_move_to_char(&mut self, char: char, rev: bool, till: bool) {
         if let Some(line) = self.buf.get(self.cursor.y) {
             self.cursor.x = 
                 if rev {
@@ -138,6 +138,7 @@ impl Editor {
                         .find(|(_, c)| *c == char)
                         .map(|i| self.cursor.x - (i.0 + 1))
                         .unwrap_or(self.cursor.x)
+                        .saturating_add(till as usize)
                 } else {
                     line.chars()
                         .enumerate()
@@ -145,6 +146,7 @@ impl Editor {
                         .find(|(_, c)| *c == char)
                         .map(|i| i.0)
                         .unwrap_or(self.cursor.x)
+                        .saturating_sub(till as usize)
                 };
         }
     }

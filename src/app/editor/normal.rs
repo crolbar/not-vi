@@ -8,8 +8,7 @@ impl Editor {
         if let Some(buf_char) = self.buffered_char {
             if let KeyCode::Char(char) = key.code {
                 match buf_char {
-                    'f' => { self.cursor_move_to_char(char, false) },
-                    'F' => { self.cursor_move_to_char(char, true) },
+                    'f' | 'F' | 't' | 'T' => { self.cursor_move_to_char(char, buf_char.is_uppercase(), buf_char == 't' || buf_char == 'T') },
 
                     'g' => { if char == 'g' { self.cursor_move_top(); } },
 
@@ -59,8 +58,15 @@ impl Editor {
                 KeyCode::Char('k') => { self.cursor_move_up(false); },
                 KeyCode::Char('j') => { self.cursor_move_down(); },
 
-                KeyCode::Char('f') => { self.buffer_char('f')? },
-                KeyCode::Char('F') => { self.buffer_char('F')? },
+                KeyCode::Char('f') |
+                KeyCode::Char('F') |
+                KeyCode::Char('t') |
+                KeyCode::Char('T') => 
+                    { 
+                        if let KeyCode::Char(char) = key.code {
+                            self.buffer_char(char)? 
+                        }
+                    },
 
                 KeyCode::Char('d') => { 
                     if key.modifiers == KeyModifiers::CONTROL {

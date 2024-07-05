@@ -9,7 +9,7 @@
     - [ ] 'c'
         - [ ] 'hljk'
         - [ ] 'w','b','e'
-    - [ ] 't'ill
+    - [x] 't'ill
     - [ ] 'y'ank
     - [ ] 'b'eginning curr word
     - [ ] 'w' next word start
