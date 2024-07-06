@@ -12,11 +12,11 @@ impl Editor {
 
                     'g' => { if char == 'g' { self.cursor_move_top(); } },
 
-                    'r' => { self.replace_char_at_cursor(char) },
+                    'r' => { if let Some(_) = self.replace_char_at_cursor(char){}; },
 
                     'd' => { 
                         match char {
-                            'l' => { self.remove_char_at_cursor() },
+                            'l' => { if let Some(_) = self.remove_char_at_cursor(){}; },
                             'h' => { 
                                 self.cursor_move_left();
                                 self.remove_char_at_cursor();
@@ -98,8 +98,9 @@ impl Editor {
                 },
 
                 KeyCode::Char('r') => { self.buffer_char('r')? },
+                KeyCode::Char('R') => { self.enter_replace()? },
 
-                KeyCode::Char('x') => { self.remove_char_at_cursor() },
+                KeyCode::Char('x') => { if let Some(_) = self.remove_char_at_cursor(){}; },
 
                 KeyCode::Char('g') => { self.buffer_char('g')? },
                 KeyCode::Char('G') => { self.cursor_move_bottom() },
@@ -133,12 +134,17 @@ impl Editor {
         Ok(())
     }
 
-    fn replace_char_at_cursor(&mut self, char: char) {
+    /// returns the replaced char
+    pub fn replace_char_at_cursor(&mut self, char: char) -> Option<char> {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
             let x = self.cursor.get_x();
-            line.remove(x);
+            let c = 
+                line.remove(x);
             line.insert(x, char);
+
+            return Some(c)
         }
+        None
     }
 
     fn remove_line_at_cursor(&mut self) {
@@ -150,14 +156,17 @@ impl Editor {
         }
     }
 
-    fn remove_char_at_cursor(&mut self) {
+    pub fn remove_char_at_cursor(&mut self) -> Option<char> {
         let line = &mut self.buf[self.cursor.get_y()];
         let x = self.cursor.get_x();
         if line.len().saturating_sub(1) <= x {
-            line.pop();
+            let c = 
+                line.pop();
             self.cursor_move_left();
+
+            return c
         } else {
-            line.remove(self.cursor.get_x());
+            Some(line.remove(self.cursor.get_x()))
         }
     }
 }

@@ -10,6 +10,7 @@ impl Editor {
                 self.cursor_move_left();
                 tui.term.set_cursor(self.cursor.get_x() as u16, self.cursor.get_y() as u16)?;
                 self.enter_normal()?;
+                self.replaced_chars.clear();
             }
 
             KeyCode::Up => { self.cursor_move_up(false) },
@@ -17,10 +18,32 @@ impl Editor {
             KeyCode::Right => { self.cursor_move_right() },
             KeyCode::Left => { self.cursor_move_left() },
 
-            KeyCode::Char(char) => { self.insert_char(char) },
-            KeyCode::Backspace | KeyCode::Delete => { self.del_char(key.code == KeyCode::Delete) },
+            KeyCode::Char(char) => {
+                if self.is_insert() {
+                    self.insert_char(char) 
+                } else {
+                    self.replace_char(char)
+                }
+            },
+
+            KeyCode::Backspace | KeyCode::Delete => { 
+                if self.is_insert() {
+                    self.del_char(key.code == KeyCode::Delete)
+                } else {
+                    self.replace_to_origin_char()
+                }
+            },
+
             KeyCode::Enter => { self.insert_nl(false) },
-            KeyCode::Tab => { self.insert_tab() }
+            KeyCode::Tab => {
+                if self.is_replace() {
+                    let rc = self.remove_char_at_cursor().unwrap();
+                    self.replaced_chars.push(rc);
+                    self.replaced_chars.push('\t');
+                }
+
+                self.insert_tab()
+            }
 
             _ => ()
         }
@@ -29,6 +52,48 @@ impl Editor {
         Ok(())
     }
 
+
+    fn replace_to_origin_char(&mut self) {
+        if self.cursor.get_x() == 0 && !self.replaced_chars.is_empty() {
+            self.del_char(false);
+
+        } else {
+            self.cursor_move_left();
+            if let Some(char) = self.replaced_chars.pop() {
+                if char == '\t' {
+                    self.cursor_move_right();
+                    self.del_char(false);
+                    let c = self.replaced_chars.pop().unwrap();
+
+                    if c != '\0' {
+                        self.insert_char(c);
+                        self.cursor_move_left();
+                    }
+
+                } else
+
+                if char != '\0' {
+                    if let Some(_) = self.replace_char_at_cursor(char){};
+                } else {
+                    self.cursor_move_right();
+                    self.del_char(false);
+                }
+            }
+        }
+    }
+
+    fn replace_char(&mut self, char: char) {
+        if self.get_curr_line_len() == self.cursor.get_x() {
+            self.insert_char(char);
+
+            self.replaced_chars.push('\0');
+        } else {
+            if let Some(rep_char) = self.replace_char_at_cursor(char){
+                self.replaced_chars.push(rep_char);
+            };
+        }
+        self.cursor_move_right();
+    }
 
     pub fn insert_tab(&mut self) {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
@@ -117,7 +182,7 @@ impl Editor {
                 if ' ' == removed_char {
                     let c = self.buf[y].chars().skip(x.saturating_sub(3 + 1)).take_while(|c| *c == ' ').count();
 
-                    if c == 3 {
+                    if c >= 3 {
                         for i in 0..3 {
                             self.buf[y].remove(x - i - 2);
                             self.cursor_move_left();

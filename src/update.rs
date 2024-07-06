@@ -10,7 +10,7 @@ impl App {
             _ => {
                 match *self.editor.get_mode() {
                     EditorMode::Normal => self.editor.normal_update(tui, key)?,
-                    EditorMode::Insert => self.editor.insert_update(tui, key)?,
+                    EditorMode::Insert | EditorMode::Replace => self.editor.insert_update(tui, key)?,
                 }
             }
         }
