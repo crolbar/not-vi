@@ -50,6 +50,19 @@ impl Editor {
             _ => ()
         }
 
+        if self.is_replace() {
+            match key.code {
+                KeyCode::Up |
+                KeyCode::Down |
+                KeyCode::Right |
+                KeyCode::Left => {
+                    self.replaced_chars.clear();
+                }
+
+                _ => ()
+            }
+        }
+
         self.set_scroll();
         Ok(())
     }
