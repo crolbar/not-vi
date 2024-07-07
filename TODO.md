@@ -26,4 +26,4 @@
 - [ ] visual mode
 - [ ] replace hode
 
-- [ ] better tabs ?
+- [x] better tabs ?

@@ -97,8 +97,18 @@ impl Editor {
 
     pub fn insert_tab(&mut self) {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
-            line.insert_str(self.cursor.get_x(), "    ");
-            self.cursor_move_x_to(self.cursor.get_x() + 4);
+            let x = self.cursor.get_x();
+            let num_of_spaces = {
+                if line.chars().take_while(|c| *c == ' ').count() == x {
+                    self.conf.shiftwidth
+                } else {
+                    self.conf.tabspop
+                }
+            };
+            let truncated_num = x - x + (num_of_spaces - (x % num_of_spaces));
+
+            line.insert_str(x, &" ".repeat(truncated_num));
+            self.cursor_move_x_to(x + truncated_num);
         }
     }
 
@@ -146,6 +156,8 @@ impl Editor {
 
         let mut removed_char = '\0';
         if let Some(line) = self.buf.get_mut(y) {
+            let line_len = line.len();
+
             if x >= line.len() && line.len() > 0 && !del_prev {
                 removed_char = line.pop().unwrap();
             }  else {
@@ -180,10 +192,29 @@ impl Editor {
 
             if !del_prev {
                 if ' ' == removed_char {
-                    let c = self.buf[y].chars().skip(x.saturating_sub(3 + 1)).take_while(|c| *c == ' ').count();
+                    let c = self.buf[y].chars()
+                        .rev()
+                        .skip(line_len.saturating_sub(x))
+                        .take_while(|c| *c == ' ')
+                        .count();
 
-                    if c >= 3 {
-                        for i in 0..3 {
+                    if c > 0 {
+                        let num_of_spaces = {
+                            if c == x - 1 {
+                                self.conf.shiftwidth
+                            } else {
+                                self.conf.tabspop
+                            }
+                        };
+
+                        let truncated_num = {
+                            let t = (x - 1) % num_of_spaces;
+
+                            if t > c { c } else { t }
+                        };
+                        
+
+                        for i in 0..truncated_num {
                             self.buf[y].remove(x - i - 2);
                             self.cursor_move_left();
                         }

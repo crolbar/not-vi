@@ -20,6 +20,9 @@ pub struct EditorConfing {
     scrolloff: u16,
     sidescrolloff: u16,
     relativenumber: bool,
+
+    shiftwidth: usize,
+    tabspop: usize,
 }
 
 pub struct Editor {
@@ -57,6 +60,8 @@ impl Editor {
                 scrolloff: 15,
                 sidescrolloff: 35,
                 relativenumber: true,
+                shiftwidth: 4,
+                tabspop: 4,
             },
             replaced_chars: Vec::new(),
 
