@@ -24,6 +24,7 @@
 - [ ] file browser
 - [ ] command mode
 - [ ] visual mode
-- [ ] replace hode
+- [x] replace mode
+    - [ ] fix crashes with empty buffer
 
-- [ ] better tabs ?
+- [x] better tabs ?

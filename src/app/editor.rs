@@ -11,7 +11,8 @@ use ratatui::prelude::*;
 #[derive(PartialEq)]
 pub enum EditorMode {
     Normal,
-    Insert
+    Insert,
+    Replace, 
 }
 
 
@@ -19,6 +20,9 @@ pub struct EditorConfing {
     scrolloff: u16,
     sidescrolloff: u16,
     relativenumber: bool,
+
+    shiftwidth: usize,
+    tabspop: usize,
 }
 
 pub struct Editor {
@@ -30,6 +34,7 @@ pub struct Editor {
      buffered_char: Option<char>,
      pub conf: EditorConfing,
      scroll: (u16, u16),
+     pub replaced_chars: Vec<char>,
 
      pub dbg: String,
 }
@@ -55,7 +60,10 @@ impl Editor {
                 scrolloff: 15,
                 sidescrolloff: 35,
                 relativenumber: true,
+                shiftwidth: 4,
+                tabspop: 4,
             },
+            replaced_chars: Vec::new(),
 
             dbg: String::new(),
         })
@@ -108,7 +116,16 @@ impl Editor {
     pub fn get_scroll(&self) -> (u16, u16) { self.scroll }
     pub fn get_mode(&self) -> &EditorMode { &self.mode }
 
+    pub fn is_normal(&self) -> bool { self.mode == EditorMode::Normal }
     pub fn is_insert(&self) -> bool { self.mode == EditorMode::Insert }
+    pub fn is_replace(&self) -> bool { self.mode == EditorMode::Replace }
+
+    pub fn enter_replace(&mut self) -> Result<()> {
+        self.mode = EditorMode::Replace;
+        execute!(std::io::stderr(), SetCursorStyle::SteadyUnderScore)?;
+
+        Ok(())
+    }
 
     pub fn enter_normal(&mut self) -> Result<()> {
         self.mode = EditorMode::Normal;

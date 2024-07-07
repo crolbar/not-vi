@@ -48,7 +48,7 @@ impl Editor {
     }
 
     pub fn cursor_move_right(&mut self) {
-        if self.buf[self.cursor.y].len().saturating_sub(!self.is_insert() as usize) > self.cursor.x {
+        if self.buf[self.cursor.y].len().saturating_sub(self.is_normal() as usize) > self.cursor.x {
             self.cursor.x += 1;
         }
 
