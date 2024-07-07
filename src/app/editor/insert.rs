@@ -27,22 +27,24 @@ impl Editor {
             },
 
             KeyCode::Backspace | KeyCode::Delete => { 
-                if self.is_insert() {
+                if self.is_insert() || key.code == KeyCode::Delete { 
                     self.del_char(key.code == KeyCode::Delete)
                 } else {
                     self.replace_to_origin_char()
                 }
             },
 
-            KeyCode::Enter => { self.insert_nl(false) },
+            KeyCode::Enter => { 
+                if !self.is_replace() {
+                    self.insert_nl(false) 
+                }
+            },
             KeyCode::Tab => {
                 if self.is_replace() {
-                    let rc = self.remove_char_at_cursor().unwrap();
-                    self.replaced_chars.push(rc);
-                    self.replaced_chars.push('\t');
+                    self.replace_insert_tab();
                 }
-
-                self.insert_tab()
+                
+                self.insert_tab();
             }
 
             _ => ()
@@ -69,14 +71,13 @@ impl Editor {
                         self.insert_char(c);
                         self.cursor_move_left();
                     }
-
                 } else
 
-                if char != '\0' {
-                    if let Some(_) = self.replace_char_at_cursor(char){};
-                } else {
+                if char == '\0' {
                     self.cursor_move_right();
                     self.del_char(false);
+                } else {
+                    if let Some(_) = self.replace_char_at_cursor(char){};
                 }
             }
         }
@@ -93,6 +94,21 @@ impl Editor {
             };
         }
         self.cursor_move_right();
+    }
+
+    fn replace_insert_tab(&mut self) {
+        if self.cursor.get_x() >= self.get_curr_line_len() {
+            self.replaced_chars.push('\0');
+        } else {
+            if self.cursor.get_x() == self.get_curr_line_len() - 1 {
+                self.cursor_move_right();
+            }
+
+            let rc = self.remove_char_at_cursor().unwrap();
+            self.replaced_chars.push(rc);
+        }
+
+        self.replaced_chars.push('\t');
     }
 
     pub fn insert_tab(&mut self) {
