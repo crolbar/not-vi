@@ -14,6 +14,13 @@ impl Editor {
 
                     'r' => { if let Some(_) = self.replace_char_at_cursor(char){}; },
 
+                    '>' => { 
+                        self.indend_line(true);
+                    },
+                    '<' => { 
+                        self.indend_line(false);
+                    },
+
                     'd' => { 
                         match char {
                             'l' => { if let Some(_) = self.remove_char_at_cursor(){}; },
@@ -126,12 +133,32 @@ impl Editor {
                     self.cursor_move_to_curr_word_end(key.modifiers == KeyModifiers::SHIFT)
                 },
 
+                KeyCode::Char('>') => { self.buffer_char('>')? },
+                KeyCode::Char('<') => { self.buffer_char('<')? },
+
+
                 _ => ()
             }
         }
 
         self.set_scroll();
         Ok(())
+    }
+
+    fn indend_line(&mut self, right: bool) {
+        if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
+            let curr_indent_len = line.chars().take_while(|c| *c == ' ').count();
+
+            let single_indent_len = self.conf.shiftwidth;
+
+            let needed_spaces_till_next_stop = single_indent_len - (curr_indent_len % single_indent_len);
+
+            if right {
+                line.insert_str(0, &" ".repeat (needed_spaces_till_next_stop));
+            } else if curr_indent_len > 0 {
+                line.drain(0..needed_spaces_till_next_stop);
+            }
+        }
     }
 
     /// returns the replaced char

@@ -127,17 +127,17 @@ impl Editor {
     pub fn insert_tab(&mut self) {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
             let x = self.cursor.get_x();
-            let num_of_spaces = {
+            let single_tab_len = {
                 if line.chars().take_while(|c| *c == ' ').count() == x {
                     self.conf.shiftwidth
                 } else {
                     self.conf.tabspop
                 }
             };
-            let truncated_num = x - x + (num_of_spaces - (x % num_of_spaces));
+            let needed_spaces_till_next_stop = single_tab_len - (x % single_tab_len);
 
-            line.insert_str(x, &" ".repeat(truncated_num));
-            self.cursor_move_x_to(x + truncated_num);
+            line.insert_str(x, &" ".repeat(needed_spaces_till_next_stop));
+            self.cursor_move_x_to(x + needed_spaces_till_next_stop);
         }
     }
 
