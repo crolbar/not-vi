@@ -43,8 +43,12 @@ impl Cursor {
 }
 
 impl Editor {
-    pub fn cursor_move_x_to(&mut self, line_len: usize) {
-        self.cursor.x = line_len;
+    pub fn cursor_move_x_to(&mut self, n: usize) {
+        self.cursor.x = n;
+    }
+
+    pub fn cursor_move_y_to(&mut self, n: usize) {
+        self.cursor.y = n;
     }
 
     pub fn cursor_move_right(&mut self) {

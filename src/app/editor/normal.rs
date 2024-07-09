@@ -14,11 +14,21 @@ impl Editor {
 
                     'r' => { if let Some(_) = self.replace_char_at_cursor(char){}; },
 
-                    '>' => { 
-                        self.indend_line(true);
-                    },
-                    '<' => { 
-                        self.indend_line(false);
+                    '>' | '<' => { 
+
+                        let end = match char {
+                            'j' => self.get_y_n_lines_down(1),
+                            'k' => self.get_y_n_lines_up(1),
+                            '{' => self.get_y_prev_empty_line(1),
+                            '}' => self.get_y_next_empty_line(1),
+                            _ => self.cursor.get_y()
+                        };
+
+                        self.indend_line(buf_char == '>', end);
+
+                        if end < self.cursor.get_y() {
+                            self.cursor_move_y_to(end);
+                        }
                     },
 
                     'd' => { 
@@ -147,20 +157,33 @@ impl Editor {
         Ok(())
     }
 
-    fn indend_line(&mut self, right: bool) {
-        if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
-            let curr_indent_len = line.chars().take_while(|c| *c == ' ').count();
+    fn indend_line(&mut self, right: bool, end: usize) {
+        let y =  self.cursor.get_y();
 
-            let single_indent_len = self.conf.shiftwidth;
+        let (start, end) = 
+            if end >= y {
+                (y, end)
+            } else {
+                (end, y.saturating_sub((self.cursor.get_x() == 0) as usize))
+            };
 
-            let needed_spaces_till_next_stop = single_indent_len - (curr_indent_len % single_indent_len);
+        (start..=end).for_each(|y| {
+            if let Some(line) = self.buf.get_mut(y) {
+                if !line.is_empty() {
+                    let curr_indent_len = line.chars().take_while(|c| *c == ' ').count();
 
-            if right {
-                line.insert_str(0, &" ".repeat (needed_spaces_till_next_stop));
-            } else if curr_indent_len > 0 {
-                line.drain(0..needed_spaces_till_next_stop);
+                    let single_indent_len = self.conf.shiftwidth;
+
+                    let needed_spaces_till_next_stop = single_indent_len - (curr_indent_len % single_indent_len);
+
+                    if right {
+                        line.insert_str(0, &" ".repeat (needed_spaces_till_next_stop));
+                    } else if curr_indent_len > 0 {
+                        line.drain(0..needed_spaces_till_next_stop);
+                    }
+                }
             }
-        }
+        })
     }
 
     /// returns the replaced char
