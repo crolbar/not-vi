@@ -32,4 +32,39 @@ impl Editor {
     pub fn get_y_n_lines_up(&self, n: usize) -> usize {
         self.cursor.get_y().saturating_sub(n)
     }
+
+    pub fn get_y_next_empty_line(&self, n: usize) -> usize {
+        let mut prev_is_empty = false;
+        if let Some(empty) = self.buf.iter()
+            .enumerate()
+            .skip(self.cursor.get_y())
+            .filter(|(i, l)| (
+                l.is_empty() && !prev_is_empty && *i != self.cursor.get_y(),
+                prev_is_empty = l.is_empty()
+            ).0)
+            .nth(n - 1)
+            .map(|i| i.0)
+        {
+            empty
+        } else {
+            self.buf.len().saturating_sub(1)
+        }
+    }
+
+    pub fn get_y_prev_empty_line(&self, n: usize) -> usize {
+        let mut prev_is_empty = false;
+        if let Some(empty) = self.buf.iter()
+            .enumerate()
+            .rev()
+            .skip(self.buf.len().saturating_sub(1) - self.cursor.get_y())
+            .filter(|(i, l)| (
+                l.is_empty() && !prev_is_empty && *i != self.cursor.get_y(),
+                prev_is_empty = l.is_empty()
+            ).0)
+            .nth(n - 1)
+            .map(|i| i.0)
+        {
+            empty
+        } else { 0 }
+    }
 }

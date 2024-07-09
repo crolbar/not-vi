@@ -116,6 +116,16 @@ impl Editor {
         self.handle_virt_move_x();
     }
 
+    pub fn cursor_move_to_next_empty_line(&mut self) {
+        self.cursor.y = self.get_y_next_empty_line(1);
+        self.cursor.x = 0;
+    }
+
+    pub fn cursor_move_to_prev_empty_line(&mut self) {
+        self.cursor.y = self.get_y_prev_empty_line(1);
+        self.cursor.x = 0;
+    }
+
     pub fn cursor_move_to_char(&mut self, char: char, rev: bool, till: bool) {
         if let Some(line) = self.buf.get(self.cursor.y) {
             self.cursor.x = 

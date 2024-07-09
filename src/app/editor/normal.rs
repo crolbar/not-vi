@@ -136,6 +136,8 @@ impl Editor {
                 KeyCode::Char('>') => { self.buffer_char('>')? },
                 KeyCode::Char('<') => { self.buffer_char('<')? },
 
+                KeyCode::Char('}') => { self.cursor_move_to_next_empty_line() },
+                KeyCode::Char('{') => { self.cursor_move_to_prev_empty_line() },
 
                 _ => ()
             }
