@@ -2,6 +2,7 @@ mod cursor;
 mod normal;
 mod insert;
 mod scroll;
+mod motion;
 use std::rc::Rc;
 use anyhow::Result;
 use cursor::Cursor;
@@ -41,10 +42,11 @@ pub struct Editor {
 
 impl Editor {
     pub fn new(v: Rc<[Rect]>) -> Result<Self> {
-        let buf = std::fs::read_to_string("src/app/editor.rs")?
+        let mut buf: Vec<String> = std::fs::read_to_string("src/app/editor.rs")?
             .split('\n')
             .map(|x| x.to_string())
             .collect();
+        buf.pop();
 
         let h = Self::create_rects(v, &buf);
 

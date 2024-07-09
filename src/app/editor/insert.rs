@@ -159,6 +159,7 @@ impl Editor {
         if x != 0 {
             let mut rem = line.split_off(x);
 
+            // TODO: FIX TIHS SHIT
             rem.insert_str(0, &indent);
             
             self.buf.insert(y + !above as usize, rem);

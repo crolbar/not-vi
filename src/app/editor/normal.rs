@@ -30,11 +30,11 @@ impl Editor {
                             },
                             'd' => { self.remove_line_at_cursor(); },
                             'j' => {
-                                if self.cursor.get_y() < self.buf.len().saturating_sub(2) {
+                                if self.cursor.get_y() < self.buf.len().saturating_sub(1) {
                                     self.remove_line_at_cursor();
                                     self.remove_line_at_cursor();
                                     self.handle_virt_move_x();
-                                    if self.cursor.get_y() > self.buf.len().saturating_sub(2) {
+                                    if self.cursor.get_y() > self.buf.len().saturating_sub(1) {
                                         self.cursor_move_up(false);
                                     }
                                 }
@@ -45,7 +45,7 @@ impl Editor {
                                     self.cursor_move_up(false);
                                     self.remove_line_at_cursor();
                                     self.handle_virt_move_x();
-                                    if self.cursor.get_y() > self.buf.len().saturating_sub(2) {
+                                    if self.cursor.get_y() > self.buf.len().saturating_sub(1) {
                                         self.cursor_move_up(false);
                                     }
                                 }

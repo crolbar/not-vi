@@ -5,7 +5,7 @@ impl Editor {
         {
             let y = self.cursor.get_y() as u16;
             let win_height = self.window.height;
-            let num_lines = self.buf.len() as u16 - 2;
+            let num_lines = self.buf.len() as u16 - 1;
             let  scrolloff = 
                 if self.conf.scrolloff >= win_height / 2 {
                     win_height / 2

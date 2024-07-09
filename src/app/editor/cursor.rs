@@ -48,16 +48,12 @@ impl Editor {
     }
 
     pub fn cursor_move_right(&mut self) {
-        if self.buf[self.cursor.y].len().saturating_sub(self.is_normal() as usize) > self.cursor.x {
-            self.cursor.x += 1;
-        }
-
+        self.cursor.x = self.get_x_n_chars_right(1);
         self.cursor.un_trunc_x = Some(self.cursor.x);
     }
 
     pub fn cursor_move_left(&mut self) {
-        self.cursor.x = self.cursor.x.saturating_sub(1);
-
+        self.cursor.x = self.get_x_n_chars_left(1);
         self.cursor.un_trunc_x = Some(self.cursor.x);
     }
 
@@ -77,16 +73,12 @@ impl Editor {
     }
 
     pub fn cursor_move_down(&mut self) {
-        if self.buf.len().saturating_sub(2) > self.cursor.y {
-            self.cursor.y += 1;
-        }
-
+        self.cursor.y = self.get_y_n_lines_down(1);
         self.handle_virt_move_x();
     }
 
     pub fn cursor_move_up(&mut self, ignore_un_trunc_x: bool) {
-        self.cursor.y = self.cursor.y.saturating_sub(1);
-
+        self.cursor.y = self.get_y_n_lines_up(1);
         if !ignore_un_trunc_x {
             self.handle_virt_move_x();
         }
@@ -98,7 +90,7 @@ impl Editor {
         self.handle_virt_move_x();
     }
     pub fn cursor_move_bottom(&mut self) {
-        self.cursor.y = self.buf.len().saturating_sub(2); 
+        self.cursor.y = self.buf.len().saturating_sub(1);
         self.handle_virt_move_x();
     }
 
@@ -115,14 +107,11 @@ impl Editor {
     }
 
     pub fn cursor_move_down_half_win(&mut self) {
-        let half_plus_y = self.cursor.y + (self.window.height / 2) as usize;
-        let lines = self.buf.len() - 2;
+        let half_down = (self.window.height / 2) as usize;
+        self.cursor.y = self.get_y_n_lines_down(half_down);
 
-        if half_plus_y > lines {
-            self.cursor.y = lines;
-        } else {
-            self.cursor.y = half_plus_y;
-            self.scroll.0 = (half_plus_y as u16).saturating_sub(self.conf.scrolloff);
+        if self.cursor.y <= self.buf.len().saturating_sub(1) {
+            self.scroll.0 = (self.cursor.y as u16).saturating_sub(self.conf.scrolloff);
         }
         self.handle_virt_move_x();
     }
