@@ -20,10 +20,12 @@
         - [ ] 'e'
     - [x] 'o', 'O'
     - [x] 'r'eplace
-    - [ ] >>, <<, ctrl-t, ctrl-d
+    - [x] >>, <<, ctrl-t, ctrl-d
     - [ ] ctrl-w, ctrl-u
     - [ ] g~, ~ ?
     - [ ] ^, $, 0
+    - [ ] [count]G
+    - count
 
 - [ ] file browser
 - [ ] command mode

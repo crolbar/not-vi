@@ -14,28 +14,13 @@ impl Editor {
 
                     'r' => { if let Some(_) = self.replace_char_at_cursor(char){}; },
 
-                    '>' | '<' => { 
-
-                        let end = match char {
-                            'j' => self.get_y_n_lines_down(1),
-                            'k' => self.get_y_n_lines_up(1),
-                            '{' => self.get_y_prev_empty_line(1),
-                            '}' => self.get_y_next_empty_line(1),
-                            _ => self.cursor.get_y()
-                        };
-
-                        self.indend_line(buf_char == '>', end);
-
-                        if end < self.cursor.get_y() {
-                            self.cursor_move_y_to(end);
-                        }
-                    },
+                    '>' | '<' => { self.shift_indent(buf_char == '>', char) }
 
                     'd' => { 
                         match char {
                             'l' => { if let Some(_) = self.remove_char_at_cursor(){}; },
                             'h' => { 
-                                self.cursor_move_left();
+                                self.cursor_move_left(1);
                                 self.remove_char_at_cursor();
                             },
                             'd' => { self.remove_line_at_cursor(); },
@@ -72,8 +57,8 @@ impl Editor {
             tui.term.set_cursor(self.cursor.get_x() as u16, self.cursor.get_y() as u16)?;
         } else {
             match key.code {
-                KeyCode::Char('h') => { self.cursor_move_left(); },
-                KeyCode::Char('l') => { self.cursor_move_right(); },
+                KeyCode::Char('h') => { self.cursor_move_left(1); },
+                KeyCode::Char('l') => { self.cursor_move_right(1); },
                 KeyCode::Char('k') => { self.cursor_move_up(false); },
                 KeyCode::Char('j') => { self.cursor_move_down(); },
 
@@ -157,14 +142,31 @@ impl Editor {
         Ok(())
     }
 
-    fn indend_line(&mut self, right: bool, end: usize) {
+    pub fn shift_indent(&mut self, right: bool, char: char) {
+        let motion_end = match char {
+            'j' => self.get_y_n_lines_down(1),
+            'k' => self.get_y_n_lines_up(1),
+            '{' => self.get_y_prev_empty_line(1),
+            '}' => self.get_y_next_empty_line(1),
+            _ => {
+                if char == 't' || char == 'd' {
+                    match right {
+                        true => self.cursor_move_right(self.conf.shiftwidth),
+                        false => self.cursor_move_left(self.conf.shiftwidth),
+                    }
+                }
+
+                self.cursor.get_y()
+            }
+        };
+
         let y =  self.cursor.get_y();
 
         let (start, end) = 
-            if end >= y {
-                (y, end)
+            if motion_end >= y {
+                (y, motion_end)
             } else {
-                (end, y.saturating_sub((self.cursor.get_x() == 0) as usize))
+                (motion_end, y.saturating_sub((self.cursor.get_x() == 0) as usize))
             };
 
         (start..=end).for_each(|y| {
@@ -183,7 +185,11 @@ impl Editor {
                     }
                 }
             }
-        })
+        });
+
+        if motion_end < self.cursor.get_y() {
+            self.cursor_move_y_to(motion_end);
+        }
     }
 
     /// returns the replaced char
@@ -214,7 +220,7 @@ impl Editor {
         if line.len().saturating_sub(1) <= x {
             let c = 
                 line.pop();
-            self.cursor_move_left();
+            self.cursor_move_left(1);
 
             return c
         } else {

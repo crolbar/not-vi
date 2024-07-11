@@ -51,13 +51,13 @@ impl Editor {
         self.cursor.y = n;
     }
 
-    pub fn cursor_move_right(&mut self) {
-        self.cursor.x = self.get_x_n_chars_right(1);
+    pub fn cursor_move_right(&mut self, n: usize) {
+        self.cursor.x = self.get_x_n_chars_right(n);
         self.cursor.un_trunc_x = Some(self.cursor.x);
     }
 
-    pub fn cursor_move_left(&mut self) {
-        self.cursor.x = self.get_x_n_chars_left(1);
+    pub fn cursor_move_left(&mut self, n: usize) {
+        self.cursor.x = self.get_x_n_chars_left(n);
         self.cursor.un_trunc_x = Some(self.cursor.x);
     }
 

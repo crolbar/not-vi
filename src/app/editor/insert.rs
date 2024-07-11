@@ -1,5 +1,5 @@
 use anyhow::Result;
-use crossterm::event::{KeyEvent, KeyCode};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use crate::tui::Tui;
 use super::Editor;
 
@@ -7,7 +7,7 @@ impl Editor {
     pub fn insert_update(&mut self, tui: &mut Tui, key: KeyEvent) -> Result<()> {
         match key.code {
             KeyCode::Esc => {
-                self.cursor_move_left();
+                self.cursor_move_left(1);
                 tui.term.set_cursor(self.cursor.get_x() as u16, self.cursor.get_y() as u16)?;
                 self.enter_normal()?;
                 self.replaced_chars.clear();
@@ -15,10 +15,18 @@ impl Editor {
 
             KeyCode::Up => { self.cursor_move_up(false) },
             KeyCode::Down => { self.cursor_move_down() },
-            KeyCode::Right => { self.cursor_move_right() },
-            KeyCode::Left => { self.cursor_move_left() },
+            KeyCode::Right => { self.cursor_move_right(1) },
+            KeyCode::Left => { self.cursor_move_left(1) },
 
             KeyCode::Char(char) => {
+                if key.modifiers == KeyModifiers::CONTROL {
+                    match char {
+                        't' => self.shift_indent(true, char) ,
+                        'd' => self.shift_indent(false, char) ,
+                        _ => ()
+                    }
+
+                } else
                 if self.is_insert() {
                     self.insert_char(char) 
                 } else {
@@ -73,21 +81,21 @@ impl Editor {
             self.del_char(false);
 
         } else {
-            self.cursor_move_left();
+            self.cursor_move_left(1);
             if let Some(char) = self.replaced_chars.pop() {
                 if char == '\t' {
-                    self.cursor_move_right();
+                    self.cursor_move_right(1);
                     self.del_char(false);
                     let c = self.replaced_chars.pop().unwrap();
 
                     if c != '\0' {
                         self.insert_char(c);
-                        self.cursor_move_left();
+                        self.cursor_move_left(1);
                     }
                 } else
 
                 if char == '\0' {
-                    self.cursor_move_right();
+                    self.cursor_move_right(1);
                     self.del_char(false);
                 } else {
                     if let Some(_) = self.replace_char_at_cursor(char){};
@@ -106,7 +114,7 @@ impl Editor {
                 self.replaced_chars.push(rep_char);
             };
         }
-        self.cursor_move_right();
+        self.cursor_move_right(1);
     }
 
     fn replace_insert_tab(&mut self) {
@@ -114,7 +122,7 @@ impl Editor {
             self.replaced_chars.push('\0');
         } else {
             if self.cursor.get_x() == self.get_curr_line_len() - 1 {
-                self.cursor_move_right();
+                self.cursor_move_right(1);
             }
 
             let rc = self.remove_char_at_cursor().unwrap();
@@ -176,7 +184,7 @@ impl Editor {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
             line.insert(self.cursor.get_x(), c);
 
-            self.cursor_move_right();
+            self.cursor_move_right(1);
         }
     }
 
@@ -246,7 +254,7 @@ impl Editor {
 
                         for i in 0..truncated_num {
                             self.buf[y].remove(x - i - 2);
-                            self.cursor_move_left();
+                            self.cursor_move_left(1);
                         }
                     }
                 }
@@ -255,7 +263,7 @@ impl Editor {
 
 
         if !del_prev{
-            self.cursor_move_left();
+            self.cursor_move_left(1);
         }
     }
 }
