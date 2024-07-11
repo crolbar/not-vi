@@ -16,39 +16,7 @@ impl Editor {
 
                     '>' | '<' => { self.shift_indent(buf_char == '>', char) }
 
-                    'd' => { 
-                        match char {
-                            'l' => { if let Some(_) = self.remove_char_at_cursor(){}; },
-                            'h' => { 
-                                self.cursor_move_left(1);
-                                self.remove_char_at_cursor();
-                            },
-                            'd' => { self.remove_line_at_cursor(); },
-                            'j' => {
-                                if self.cursor.get_y() < self.buf.len().saturating_sub(1) {
-                                    self.remove_line_at_cursor();
-                                    self.remove_line_at_cursor();
-                                    self.handle_virt_move_x();
-                                    if self.cursor.get_y() > self.buf.len().saturating_sub(1) {
-                                        self.cursor_move_up(false);
-                                    }
-                                }
-                            },
-                            'k' => {
-                                if self.cursor.get_y() != 0 {
-                                    self.remove_line_at_cursor();
-                                    self.cursor_move_up(false);
-                                    self.remove_line_at_cursor();
-                                    self.handle_virt_move_x();
-                                    if self.cursor.get_y() > self.buf.len().saturating_sub(1) {
-                                        self.cursor_move_up(false);
-                                    }
-                                }
-                            },
-
-                            _ => ()
-                        }
-                    },
+                    'd' => { self.op_delete(char) },
 
                     _ => ()
                 }
@@ -142,31 +110,42 @@ impl Editor {
         Ok(())
     }
 
-    pub fn shift_indent(&mut self, right: bool, char: char) {
-        let motion_end = match char {
-            'j' => self.get_y_n_lines_down(1),
-            'k' => self.get_y_n_lines_up(1),
-            '{' => self.get_y_prev_empty_line(1),
-            '}' => self.get_y_next_empty_line(1),
-            _ => {
-                if char == 't' || char == 'd' {
-                    match right {
-                        true => self.cursor_move_right(self.conf.shiftwidth),
-                        false => self.cursor_move_left(self.conf.shiftwidth),
-                    }
-                }
+    fn get_motion_end(&self, char: char) -> (usize, usize) {
+        (
+            match char {
+                'h' => self.get_x_n_chars_left(1),
+                'l' => self.get_x_n_chars_right(1),
+                _ => self.cursor.get_x()
+            } ,
 
-                self.cursor.get_y()
+            match char {
+                'j' => self.get_y_n_lines_down(1),
+                'k' => self.get_y_n_lines_up(1),
+
+                '{' => self.get_y_prev_empty_line(1),
+                '}' => self.get_y_next_empty_line(1),
+                _ => self.cursor.get_y(),
             }
-        };
+        )
+    }
+
+    pub fn shift_indent(&mut self, right: bool, char: char) {
+        if char == 't' || char == 'd' {
+            match right {
+                true => self.cursor_move_right(self.conf.shiftwidth),
+                false => self.cursor_move_left(self.conf.shiftwidth),
+            }
+        }
+
+        let (_, end_y) = self.get_motion_end(char);
 
         let y =  self.cursor.get_y();
 
         let (start, end) = 
-            if motion_end >= y {
-                (y, motion_end)
+            if end_y >= y {
+                (y, end_y)
             } else {
-                (motion_end, y.saturating_sub((self.cursor.get_x() == 0) as usize))
+                (end_y, y.saturating_sub((self.cursor.get_x() == 0) as usize))
             };
 
         (start..=end).for_each(|y| {
@@ -187,8 +166,8 @@ impl Editor {
             }
         });
 
-        if motion_end < self.cursor.get_y() {
-            self.cursor_move_y_to(motion_end);
+        if end_y < self.cursor.get_y() {
+            self.cursor_move_y_to(end_y);
         }
     }
 
@@ -203,6 +182,49 @@ impl Editor {
             return Some(c)
         }
         None
+    }
+
+
+    fn op_delete(&mut self, char: char) {
+        let y = self.cursor.get_y();
+        let x = self.cursor.get_x();
+
+        let (mx, my) = self.get_motion_end(char);
+
+        match char {
+            'k' => self.cursor_move_up(false),
+            'h' => self.cursor_move_left(1),
+            _ => ()
+        }
+
+        if my != y {
+            let (start_y, end_y) = 
+                (
+                    std::cmp::min(y, my),
+                    std::cmp::max(y, my)
+                );
+
+            self.buf.drain(start_y..=end_y);
+
+            self.handle_vert_move_x();
+        } else 
+
+        if char == 'd' {
+            self.buf.remove(y);
+        }
+
+
+        if mx != x {
+            if let Some(line) = self.buf.get_mut(y) {
+                let (start_x, end_x) = 
+                    (
+                        std::cmp::min(x, mx),
+                        std::cmp::max(x, mx)
+                    );
+
+                line.drain(start_x..end_x);
+            }
+        }
     }
 
     fn remove_line_at_cursor(&mut self) {

@@ -62,7 +62,7 @@ impl Editor {
     }
 
 
-    pub fn handle_virt_move_x(&mut self) {
+    pub fn handle_vert_move_x(&mut self) {
         if let Some(l) = self.buf.get(self.cursor.y as usize) {
             if self.cursor.x >= l.len() {
                 self.cursor.x = l.len().saturating_sub(1)
@@ -78,24 +78,24 @@ impl Editor {
 
     pub fn cursor_move_down(&mut self) {
         self.cursor.y = self.get_y_n_lines_down(1);
-        self.handle_virt_move_x();
+        self.handle_vert_move_x();
     }
 
     pub fn cursor_move_up(&mut self, ignore_un_trunc_x: bool) {
         self.cursor.y = self.get_y_n_lines_up(1);
         if !ignore_un_trunc_x {
-            self.handle_virt_move_x();
+            self.handle_vert_move_x();
         }
     }
 
 
     pub fn cursor_move_top(&mut self) { 
         self.cursor.y = 0; 
-        self.handle_virt_move_x();
+        self.handle_vert_move_x();
     }
     pub fn cursor_move_bottom(&mut self) {
         self.cursor.y = self.buf.len().saturating_sub(1);
-        self.handle_virt_move_x();
+        self.handle_vert_move_x();
     }
 
     pub fn cursor_move_up_half_win(&mut self) {
@@ -107,7 +107,7 @@ impl Editor {
             self.cursor.y = half_sub_y;
             self.scroll.0 = (half_sub_y as u16 + self.conf.scrolloff).saturating_sub(self.window.height);
         }
-        self.handle_virt_move_x();
+        self.handle_vert_move_x();
     }
 
     pub fn cursor_move_down_half_win(&mut self) {
@@ -117,7 +117,7 @@ impl Editor {
         if self.cursor.y <= self.buf.len().saturating_sub(1) {
             self.scroll.0 = (self.cursor.y as u16).saturating_sub(self.conf.scrolloff);
         }
-        self.handle_virt_move_x();
+        self.handle_vert_move_x();
     }
 
     pub fn cursor_move_to_next_empty_line(&mut self) {

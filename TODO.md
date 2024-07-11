@@ -18,6 +18,7 @@
         - [ ] 'b'
         - [ ] 'w'
         - [ ] 'e'
+        - [ ] 't' 'f'
     - [x] 'o', 'O'
     - [x] 'r'eplace
     - [x] >>, <<, ctrl-t, ctrl-d
@@ -26,6 +27,8 @@
     - [ ] ^, $, 0
     - [ ] [count]G
     - count
+
+- [ ] fix delete going outside of screen                               
 
 - [ ] file browser
 - [ ] command mode
