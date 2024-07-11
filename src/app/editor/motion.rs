@@ -67,4 +67,30 @@ impl Editor {
             empty
         } else { 0 }
     }
+
+    pub fn get_x_at_char(&self, rev: bool, till: bool, char: char) -> usize {
+        let y = self.cursor.get_y();
+        let x = self.cursor.get_x();
+
+        if let Some(line) = self.buf.get(y) {
+            if rev {
+                line.chars()
+                    .rev()
+                    .skip(line.len() - x)
+                    .enumerate()
+                    .find(|(_, c)| *c == char)
+                    .map(|i| x - (i.0 + 1))
+                    .unwrap_or(x + till as usize)
+                    .saturating_add(till as usize)
+            } else {
+                line.chars()
+                    .enumerate()
+                    .skip(x + 1)
+                    .find(|(_, c)| *c == char)
+                    .map(|i| i.0)
+                    .unwrap_or(x + till as usize)
+                    .saturating_sub(till as usize)
+            }
+        } else {self.cursor.get_x()}
+    }
 }

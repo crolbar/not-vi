@@ -131,27 +131,7 @@ impl Editor {
     }
 
     pub fn cursor_move_to_char(&mut self, char: char, rev: bool, till: bool) {
-        if let Some(line) = self.buf.get(self.cursor.y) {
-            self.cursor.x = 
-                if rev {
-                    line.chars()
-                        .rev()
-                        .skip(line.len() - self.cursor.x)
-                        .enumerate()
-                        .find(|(_, c)| *c == char)
-                        .map(|i| self.cursor.x - (i.0 + 1))
-                        .unwrap_or(self.cursor.x)
-                        .saturating_add(till as usize)
-                } else {
-                    line.chars()
-                        .enumerate()
-                        .skip(self.cursor.x + 1)
-                        .find(|(_, c)| *c == char)
-                        .map(|i| i.0)
-                        .unwrap_or(self.cursor.x)
-                        .saturating_sub(till as usize)
-                };
-        }
+        self.cursor.x = self.get_x_at_char(rev, till, char);
     }
 
     pub fn cursor_move_to_next_word_start(&mut self, shift: bool) {
