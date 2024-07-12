@@ -3,19 +3,33 @@ mod normal;
 mod insert;
 mod scroll;
 mod motion;
+pub mod binds;
 use std::rc::Rc;
 use anyhow::Result;
+use binds::{Cmd, Cmds};
 use cursor::Cursor;
-use crossterm::{execute, cursor::SetCursorStyle};
+use crossterm::{cursor::SetCursorStyle, event::{KeyCode, KeyEvent}, execute};
 use ratatui::prelude::*;
 
-#[derive(PartialEq)]
+#[derive(Hash, PartialEq, Eq)]
 pub enum EditorMode {
     Normal,
+    Pending,
     Insert,
     Replace, 
 }
 
+
+impl std::fmt::Display for EditorMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EditorMode::Normal => write!(f, "Normal"),
+            EditorMode::Pending => write!(f, "Pending"),
+            EditorMode::Insert => write!(f, "Insert"),
+            EditorMode::Replace => write!(f, "Replace"),
+        }
+    }
+}
 
 pub struct EditorConfing {
     scrolloff: u16,
@@ -27,17 +41,20 @@ pub struct EditorConfing {
 }
 
 pub struct Editor {
-     buf: Vec<String>,
-     mode: EditorMode,
-     window: Rect,
-     line_num_window: Rect,
-     pub cursor: Cursor,
-     buffered_char: Option<char>,
-     pub conf: EditorConfing,
-     scroll: (u16, u16),
-     pub replaced_chars: Vec<char>,
+    buf: Vec<String>,
+    mode: EditorMode,
+    window: Rect,
+    line_num_window: Rect,
+    pub cursor: Cursor,
+    pub conf: EditorConfing,
+    scroll: (u16, u16),
+    pub replaced_chars: Vec<char>,
 
-     pub dbg: String,
+    pub curr_cmd: Cmd,
+    nkey: Option<KeyEvent>,
+    pub cmds: Cmds,
+
+    pub dbg: String,
 }
 
 impl Editor {
@@ -56,7 +73,6 @@ impl Editor {
             cursor: Cursor::new(&h[2]),
             window: h[2],
             line_num_window: h[0],
-            buffered_char: None,
             scroll: (0, 0),
             conf: EditorConfing {
                 scrolloff: 15,
@@ -66,6 +82,10 @@ impl Editor {
                 tabspop: 4,
             },
             replaced_chars: Vec::new(),
+
+            cmds: Cmds::new(),
+            nkey: None,
+            curr_cmd: Cmd::new(),
 
             dbg: String::new(),
         })
@@ -100,19 +120,6 @@ impl Editor {
             ]).split(v[0])
     }
 
-
-    pub fn buffer_char(&mut self, char: char) -> Result<()> {
-        execute!(std::io::stderr(), SetCursorStyle::SteadyUnderScore)?;
-        self.buffered_char = Some(char);
-        Ok(())
-    }
-
-    pub fn remove_bufferd_char(&mut self) -> Result<()> {
-        execute!(std::io::stderr(), SetCursorStyle::SteadyBlock)?;
-        self.buffered_char = None;
-        Ok(())
-    }
-
     pub fn get_buf(&self) -> &Vec<String> { &self.buf }
 
     pub fn get_scroll(&self) -> (u16, u16) { self.scroll }
@@ -124,6 +131,7 @@ impl Editor {
 
     pub fn enter_replace(&mut self) -> Result<()> {
         self.mode = EditorMode::Replace;
+        self.curr_cmd.set_mode(EditorMode::Replace);
         execute!(std::io::stderr(), SetCursorStyle::SteadyUnderScore)?;
 
         Ok(())
@@ -131,6 +139,8 @@ impl Editor {
 
     pub fn enter_normal(&mut self) -> Result<()> {
         self.mode = EditorMode::Normal;
+        self.curr_cmd.set_mode(EditorMode::Normal);
+        self.curr_cmd.clear();
         execute!(std::io::stderr(), SetCursorStyle::SteadyBlock)?;
 
         Ok(())
@@ -138,8 +148,46 @@ impl Editor {
 
     pub fn enter_insert(&mut self) -> Result<()> {
         self.mode = EditorMode::Insert;
+        self.curr_cmd.set_mode(EditorMode::Insert);
         execute!(std::io::stderr(), SetCursorStyle::SteadyBar)?;
 
+        Ok(())
+    }
+
+    pub fn enter_pending(&mut self) -> Result<()> {
+        self.mode = EditorMode::Pending;
+        self.curr_cmd.set_mode(EditorMode::Pending);
+        execute!(std::io::stderr(), SetCursorStyle::SteadyUnderScore)?;
+        Ok(())
+    }
+
+    pub fn get_nkey_char(&self) -> Option<char> {
+        if let Some(key) = self.nkey {
+            if let KeyCode::Char(c) = key.code {
+                Some(c)
+            } else {None}
+        } else {None}
+    }
+
+    pub fn set_nkey(&mut self, key: KeyEvent) {
+        self.nkey = Some(key);
+    }
+
+    pub fn do_if_contains(&mut self) -> Result<()> {
+        if let Some(f) = self.cmds.cmds.get(&self.curr_cmd) {
+            f(self);
+
+            self.curr_cmd.clear();
+            self.enter_normal()?;
+        } else
+
+        if self.cmds.should_get_additional(&mut self.curr_cmd) {
+            if self.curr_cmd.should_get_nkey() {
+                self.enter_pending()?;
+            }
+        } else {
+            self.curr_cmd.clear();
+        }
         Ok(())
     }
 }

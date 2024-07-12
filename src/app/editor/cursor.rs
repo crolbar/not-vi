@@ -51,13 +51,13 @@ impl Editor {
         self.cursor.y = n;
     }
 
-    pub fn cursor_move_right(&mut self, n: usize) {
-        self.cursor.x = self.get_x_n_chars_right(n);
+    pub fn cursor_move_right(&mut self) {
+        self.cursor.x = self.get_x_n_chars_right(1);
         self.cursor.un_trunc_x = Some(self.cursor.x);
     }
 
-    pub fn cursor_move_left(&mut self, n: usize) {
-        self.cursor.x = self.get_x_n_chars_left(n);
+    pub fn cursor_move_left(&mut self) {
+        self.cursor.x = self.get_x_n_chars_left(1);
         self.cursor.un_trunc_x = Some(self.cursor.x);
     }
 
@@ -81,11 +81,9 @@ impl Editor {
         self.handle_vert_move_x();
     }
 
-    pub fn cursor_move_up(&mut self, ignore_un_trunc_x: bool) {
+    pub fn cursor_move_up(&mut self) {
         self.cursor.y = self.get_y_n_lines_up(1);
-        if !ignore_un_trunc_x {
-            self.handle_vert_move_x();
-        }
+        self.handle_vert_move_x();
     }
 
 
@@ -130,8 +128,16 @@ impl Editor {
         self.cursor.x = 0;
     }
 
-    pub fn cursor_move_to_char(&mut self, char: char, rev: bool, till: bool) {
-        self.cursor.x = self.get_x_at_char(rev, till, char);
+    pub fn cursor_move_to_char(&mut self) {
+        if let Some(c) = self.curr_cmd.get_char_n(0) {
+            if let Some(nchar) = self.get_nkey_char() {
+
+                let rev = c.is_uppercase();
+                let till = c == 't' || c == 'T';
+
+                self.cursor.x = self.get_x_at_char(rev, till, nchar);
+            }
+        }
     }
 
     pub fn cursor_move_to_next_word_start(&mut self, shift: bool) {
