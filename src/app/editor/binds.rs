@@ -1,32 +1,15 @@
-use std::{collections::HashMap, hash::{Hash, Hasher}};
+use std::{collections::HashMap, hash::Hash};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use super::{Editor, EditorMode};
 
 use std::cmp::PartialEq;
 
 
+#[derive(PartialEq, Eq, Hash)]
 pub struct Cmd {
     pub mode: EditorMode,
     pub keys: Vec<KeyEvent>,
     gnkey: bool,
-}
-
-impl PartialEq for Cmd {
-    fn eq(&self, other: &Self) -> bool {
-        self.mode == other.mode 
-        && self.keys == other.keys 
-        && self.gnkey == other.gnkey
-    }
-}
-
-impl Eq for Cmd {}
-
-impl Hash for Cmd {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.mode.hash(state);
-        self.keys.hash(state);
-        self.gnkey.hash(state);
-    }
 }
 
 impl Cmd {
