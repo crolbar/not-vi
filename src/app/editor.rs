@@ -6,7 +6,7 @@ mod motion;
 pub mod binds;
 use std::rc::Rc;
 use anyhow::Result;
-use binds::{Cmd, Cmds};
+use binds::{Cmd, Cmds, OP};
 use cursor::Cursor;
 use crossterm::{cursor::SetCursorStyle, event::{KeyCode, KeyEvent}, execute};
 use ratatui::prelude::*;
@@ -54,6 +54,10 @@ pub struct Editor {
     nkey: Option<KeyEvent>,
     pub cmds: Cmds,
 
+    pub op_type: Option<OP>,
+    motion_xend: Option<usize>,
+    pub motion_yend: Option<usize>,
+
     pub dbg: String,
 }
 
@@ -86,6 +90,10 @@ impl Editor {
             cmds: Cmds::new(),
             nkey: None,
             curr_cmd: Cmd::new(),
+
+            op_type: None,
+            motion_xend: None,
+            motion_yend: None,
 
             dbg: String::new(),
         })
@@ -146,12 +154,12 @@ impl Editor {
         Ok(())
     }
 
-    pub fn enter_insert(&mut self) -> Result<()> {
+    pub fn enter_insert(&mut self) {
         self.mode = EditorMode::Insert;
         self.curr_cmd.set_mode(EditorMode::Insert);
-        execute!(std::io::stderr(), SetCursorStyle::SteadyBar)?;
+        execute!(std::io::stderr(), SetCursorStyle::SteadyBar).unwrap();
 
-        Ok(())
+        //Ok(())
     }
 
     pub fn enter_pending(&mut self) -> Result<()> {
@@ -174,6 +182,8 @@ impl Editor {
     }
 
     pub fn do_if_contains(&mut self) -> Result<()> {
+        self.dbg = format!("{:?}, {}", self.curr_cmd.keys, self.curr_cmd.mode);
+
         if let Some(f) = self.cmds.cmds.get(&self.curr_cmd) {
             f(self);
 
@@ -188,6 +198,18 @@ impl Editor {
         } else {
             self.curr_cmd.clear();
         }
+
+        if let (Some(op), Some(my)) = (&self.op_type, self.motion_yend) {
+            match op {
+                OP::Delete => {
+                    self.op_delete(my)
+                }
+                _ => ()
+            }
+            self.op_type = None;
+            self.motion_yend = None;
+        }
+
         Ok(())
     }
 }

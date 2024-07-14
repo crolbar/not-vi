@@ -28,7 +28,7 @@ impl Editor {
 
                 } else
                 if self.is_insert() {
-                    self.insert_char(char) 
+                    self.insert_char() 
                 } else {
                     self.replace_char(char)
                 }
@@ -89,7 +89,7 @@ impl Editor {
                     let c = self.replaced_chars.pop().unwrap();
 
                     if c != '\0' {
-                        self.insert_char(c);
+                        self.insert_char();
                         self.cursor_move_left();
                     }
                 } else
@@ -106,7 +106,7 @@ impl Editor {
 
     fn replace_char(&mut self, char: char) {
         if self.get_curr_line_len() == self.cursor.get_x() {
-            self.insert_char(char);
+            self.insert_char();
 
             self.replaced_chars.push('\0');
         } else {
@@ -180,11 +180,13 @@ impl Editor {
         self.set_scroll();
     }
 
-    pub fn insert_char(&mut self, c: char) {
+    pub fn insert_char(&mut self) {
+        if let Some(c) = self.get_nkey_char() {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
             line.insert(self.cursor.get_x(), c);
 
             self.cursor_move_right();
+        }
         }
     }
 

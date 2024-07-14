@@ -63,9 +63,18 @@ macro_rules! bind_key {
     };
 }
 
+pub enum OP {
+    Delete,
+    ShiftIndent,
+}
+
 impl Cmds {
     pub fn new() -> Self {
         let mut cmds: HashMap<Cmd, fn(&mut Editor)> = HashMap::new();
+
+        bind_key!(cmds, EditorMode::Normal,
+            vec![KeyEvent::new(KeyCode::Char('d'), KeyModifiers::NONE)],
+            false, Editor::set_op_type);
 
         bind_key!(cmds, EditorMode::Normal,
             vec![KeyEvent::new(KeyCode::Char('d'), KeyModifiers::CONTROL)],
@@ -120,6 +129,11 @@ impl Cmds {
 
     pub fn should_get_additional(&mut self, curr_cmd: &mut Cmd) -> bool {
         let keys = &curr_cmd.keys;
+
+        if keys.is_empty() && curr_cmd.mode == EditorMode::Insert {
+            curr_cmd.gnkey = true;
+            return true;
+        }
 
         for cmd in self.cmds.keys() {
             if keys.iter()

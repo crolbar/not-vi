@@ -1,7 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use crate::tui::Tui;
 use anyhow::Result;
-use super::Editor;
+use super::{binds::OP, Editor};
 
 impl Editor {
     pub fn normal_update(&mut self, tui: &mut Tui, key: KeyEvent) -> Result<()> {
@@ -171,6 +171,17 @@ impl Editor {
         }
     }
 
+    pub fn set_op_type(&mut self) {
+        if let Some(c) = self.curr_cmd.get_char_n(0) {
+            self.op_type = 
+                match c {
+                    'd' => Some(OP::Delete),
+                    '>' | '<' => Some(OP::ShiftIndent),
+                    _ => None,
+                }
+        }
+    }
+
     /// returns the replaced char
     pub fn replace_char_at_cursor(&mut self, char: char) -> Option<char> {
         if let Some(line) = self.buf.get_mut(self.cursor.get_y()) {
@@ -185,17 +196,19 @@ impl Editor {
     }
 
 
-    fn op_delete(&mut self, char: char) {
+    pub fn op_delete(&mut self, my: usize) {
         let y = self.cursor.get_y();
         let x = self.cursor.get_x();
 
-        let (mx, my) = self.get_motion_end(char);
+        //let (mx, my) = self.get_motion_end(char);
 
-        match char {
-            'k' => self.cursor_move_up(),
-            'h' => self.cursor_move_left(),
-            _ => ()
-        }
+        let mx = self.cursor.get_x();
+        //match char {
+        //    'k' => self.cursor_move_up(),
+        //    'h' => self.cursor_move_left(),
+        //    _ => ()
+        //}
+
 
         if my != y {
             let (start_y, end_y) = 
@@ -209,9 +222,9 @@ impl Editor {
             self.handle_vert_move_x();
         } else 
 
-        if char == 'd' {
-            self.buf.remove(y);
-        }
+        //if char == 'd' {
+        //    self.buf.remove(y);
+        //}
 
 
         if mx != x {
