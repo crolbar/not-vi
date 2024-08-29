@@ -10,7 +10,7 @@ impl App {
 
             _ => {
                 if self.editor.curr_cmd.should_get_nkey() {
-                    self.editor.set_nkey(key);
+                    self.editor.set_nkey(key)?;
                 } else {
                     self.editor.curr_cmd.push_key(key);
                 }

@@ -78,7 +78,7 @@ impl Editor {
 
     pub fn cursor_move_down(&mut self) {
         if self.op_type.is_some() {
-            self.motion_yend = Some(self.get_y_n_lines_down(1));
+            self.motion_end = Some((self.get_y_n_lines_down(1), 0));
         } else {
             self.cursor.y = self.get_y_n_lines_down(1);
         }

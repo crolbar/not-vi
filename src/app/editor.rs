@@ -13,6 +13,7 @@ use ratatui::prelude::*;
 
 #[derive(Hash, PartialEq, Eq)]
 pub enum EditorMode {
+    Any,
     Normal,
     Pending,
     Insert,
@@ -27,6 +28,7 @@ impl std::fmt::Display for EditorMode {
             EditorMode::Pending => write!(f, "Pending"),
             EditorMode::Insert => write!(f, "Insert"),
             EditorMode::Replace => write!(f, "Replace"),
+            EditorMode::Any => write!(f, "Any"),
         }
     }
 }
@@ -55,8 +57,8 @@ pub struct Editor {
     pub cmds: Cmds,
 
     pub op_type: Option<OP>,
-    motion_xend: Option<usize>,
-    pub motion_yend: Option<usize>,
+    pub motion_end: Option<(usize, usize)>,
+    motion_start: Option<(usize, usize)>,
 
     pub dbg: String,
 }
@@ -92,8 +94,8 @@ impl Editor {
             curr_cmd: Cmd::new(),
 
             op_type: None,
-            motion_xend: None,
-            motion_yend: None,
+            motion_end: None,
+            motion_start: None,
 
             dbg: String::new(),
         })
@@ -177,8 +179,10 @@ impl Editor {
         } else {None}
     }
 
-    pub fn set_nkey(&mut self, key: KeyEvent) {
+    pub fn set_nkey(&mut self, key: KeyEvent) -> Result<()> {
         self.nkey = Some(key);
+        self.enter_normal()?;
+        Ok(())
     }
 
     pub fn do_if_contains(&mut self) -> Result<()> {
@@ -188,26 +192,31 @@ impl Editor {
             f(self);
 
             self.curr_cmd.clear();
-            self.enter_normal()?;
+            if self.op_type.is_none() {
+                self.enter_normal()?;
+            }
         } else
 
         if self.cmds.should_get_additional(&mut self.curr_cmd) {
             if self.curr_cmd.should_get_nkey() {
-                self.enter_pending()?;
+                self.enter_pending().unwrap();
             }
         } else {
+            self.enter_normal()?;
             self.curr_cmd.clear();
         }
 
-        if let (Some(op), Some(my)) = (&self.op_type, self.motion_yend) {
+        if let (Some(op), Some(me)) = (&self.op_type, self.motion_end) {
             match op {
                 OP::Delete => {
-                    self.op_delete(my)
+                    self.op_delete(me.0)
                 }
                 _ => ()
             }
+
             self.op_type = None;
-            self.motion_yend = None;
+            self.motion_end = None;
+            self.enter_normal()?;
         }
 
         Ok(())

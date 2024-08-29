@@ -14,6 +14,7 @@ fn main() -> Result<()> {
     while !app.exit {
         tui.draw(&mut app)?;
 
+        app.editor.dbg.clear();
         match tui.event_handler.recv()? {
             Event::Key(key) => app.update(&mut tui, key)?,
             _ => ()

@@ -28,7 +28,7 @@
     - [ ] [count]G
     - count
 
-- [ ] fix delete going outside of screen                               
+- [ ] fix delete going outside of screen
 
 - [ ] file browser
 - [ ] command mode

@@ -80,7 +80,7 @@ impl Editor {
                     .enumerate()
                     .find(|(_, c)| *c == char)
                     .map(|i| x - (i.0 + 1))
-                    .unwrap_or(x + till as usize)
+                    .unwrap_or(x.saturating_sub(till as usize))
                     .saturating_add(till as usize)
             } else {
                 line.chars()

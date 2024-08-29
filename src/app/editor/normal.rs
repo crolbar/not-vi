@@ -178,7 +178,8 @@ impl Editor {
                     'd' => Some(OP::Delete),
                     '>' | '<' => Some(OP::ShiftIndent),
                     _ => None,
-                }
+                };
+            self.enter_pending().unwrap();
         }
     }
 

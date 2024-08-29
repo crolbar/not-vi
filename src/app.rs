@@ -37,7 +37,7 @@ impl App {
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Percentage(100),
-                Constraint::Min(1),
+                Constraint::Min(3),
             ]).split(window)
     }
 }

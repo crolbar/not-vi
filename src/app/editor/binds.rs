@@ -67,6 +67,14 @@ pub enum OP {
     Delete,
     ShiftIndent,
 }
+impl std::fmt::Debug for OP {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OP::Delete => write!(f, "Del"),
+            OP::ShiftIndent => write!(f, "Shift"),
+        }
+    }
+}
 
 impl Cmds {
     pub fn new() -> Self {
@@ -76,6 +84,7 @@ impl Cmds {
             vec![KeyEvent::new(KeyCode::Char('d'), KeyModifiers::NONE)],
             false, Editor::set_op_type);
 
+
         bind_key!(cmds, EditorMode::Normal,
             vec![KeyEvent::new(KeyCode::Char('d'), KeyModifiers::CONTROL)],
             false, Editor::cursor_move_down_half_win);
@@ -83,6 +92,7 @@ impl Cmds {
         bind_key!(cmds, EditorMode::Normal,
             vec![KeyEvent::new(KeyCode::Char('u'), KeyModifiers::CONTROL)],
             false, Editor::cursor_move_up_half_win);
+
 
         bind_key!(cmds, EditorMode::Normal,
             vec![KeyEvent::new(KeyCode::Char('G'), KeyModifiers::NONE)],
@@ -128,21 +138,17 @@ impl Cmds {
     }
 
     pub fn should_get_additional(&mut self, curr_cmd: &mut Cmd) -> bool {
-        let keys = &curr_cmd.keys;
-
-        if keys.is_empty() && curr_cmd.mode == EditorMode::Insert {
-            curr_cmd.gnkey = true;
-            return true;
-        }
+        let curr_cmd_keys = &curr_cmd.keys;
 
         for cmd in self.cmds.keys() {
-            if keys.iter()
+            // if we have an match or partial match
+            if curr_cmd_keys.iter()
                 .zip(cmd.keys.clone())
                     .all(|(&k, k2)| k == k2)
             {
                 // if the first `keys.len` keys match but there are more keys needed for the cmd
                 // like in `gg`
-                if keys.len() != cmd.keys.len() {
+                if curr_cmd_keys.len() != cmd.keys.len() {
                     return true
                 // if we have and match but the cmd requires the next key press 
                 // like in 'f', 't', 'm'..

@@ -33,6 +33,7 @@ impl Tui {
     }
 
     pub fn draw(&mut self, app: &mut App) -> Result<()> {
+        self.term.hide_cursor()?;
         self.term.draw(|frame| render(app, frame))?;
         Ok(())
     }
