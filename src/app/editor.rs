@@ -16,6 +16,15 @@ pub enum EditorMode {
     Replace, 
 }
 
+impl std::fmt::Display for EditorMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EditorMode::Normal => write!(f, "Normal"),
+            EditorMode::Insert => write!(f, "Insert"),
+            EditorMode::Replace => write!(f, "Replace"),
+        }
+    }
+}
 
 pub struct EditorConfing {
     scrolloff: u16,

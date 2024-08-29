@@ -12,6 +12,24 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     app.render_line_nums(frame);
 
 
+{
+frame.render_widget(
+    Paragraph::new(format!(
+            "y: {} x: {} scroll: ({}, {}) buff_len: {} win_h {} mode {} dbg: {}",
+            app.editor.cursor.get_y(),
+            app.editor.cursor.get_x(),
+            scroll.0, scroll.1,
+            app.editor.get_buf().len(),
+            app.editor.get_window().height,
+
+            app.editor.get_mode(),
+
+            app.editor.dbg,
+    )).wrap(Wrap::default()),
+    app.get_bar_win()
+);
+}
+
     frame.render_widget(
         Paragraph::new(display_buf)
         .scroll(scroll),
