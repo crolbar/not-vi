@@ -37,3 +37,10 @@
     - [ ] fix crashes with empty buffer
 
 - [x] better tabs ?
+
+### refactor_binds2
+- [ ] make all functions that i want to be behind a bind take the same args
+- [ ] a way to bind a key to an certain function
+- [ ] a way to get the next pressed key for commands like `f` `t`
+
+- [ ] operatiors
